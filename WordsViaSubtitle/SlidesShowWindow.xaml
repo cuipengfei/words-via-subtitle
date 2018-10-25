@@ -1,0 +1,24 @@
+﻿<Window x:Class="WordsViaSubtitle.SlidesShowWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Slides Show" Height="300" Width="300"
+        Closing="Window_Closing"
+        WindowStyle="None" WindowState="Maximized" Background="Black" HorizontalAlignment="Center" VerticalAlignment="Center" KeyDown="Window_KeyDown">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="word" Foreground="White" FontSize="72" Name="textArea"/>
+
+        <Grid  Name="lowerGrid" Grid.Row="1">
+            <ContentControl Name="explanationPresenterArea">
+
+            </ContentControl>
+            <ContentControl Name="videoArea">
+
+            </ContentControl>
+        </Grid>
+
+    </Grid>
+</Window>
