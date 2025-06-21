@@ -2,7 +2,7 @@ import { IpcMainInvokeEvent } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { Subtitle, SubtitleParseResult, WordTimeMapping } from '@/shared/ipc';
+import { Subtitle, SubtitleParseResult, WordTimeMapping } from '../../shared/ipc';
 
 /**
  * 字幕解析服务类

@@ -1,0 +1,19 @@
+1
+00:00:01,000 --> 00:00:03,000
+Hello, welcome to our English learning application.
+
+2
+00:00:04,000 --> 00:00:07,000
+This subtitle file will help you learn new words.
+
+3
+00:00:08,000 --> 00:00:11,000
+You can click on any word to see its definition.
+
+4
+00:00:12,000 --> 00:00:15,000
+The application supports both SRT and ASS subtitle formats.
+
+5
+00:00:16,000 --> 00:00:19,000
+Practice makes perfect when learning English vocabulary.

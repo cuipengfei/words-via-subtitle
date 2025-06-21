@@ -1,8 +1,15 @@
 import { ipcMain, dialog } from 'electron';
 import { IpcChannels } from '../shared/ipc';
+import { SubtitleParserService } from './services/subtitleParser';
+
+// 创建服务实例
+const subtitleParser = new SubtitleParserService();
 
 export function registerIpcHandlers() {
   console.log('注册 IPC 处理器...');
+
+  // 初始化服务
+  subtitleParser.initialize();
 
   // 文件操作处理器
   ipcMain.handle(IpcChannels.OPEN_SUBTITLE_FILE, async () => {
@@ -39,14 +46,20 @@ export function registerIpcHandlers() {
     return result.filePaths[0];
   });
 
-  // 暂时的占位处理器
-  ipcMain.handle(IpcChannels.PARSE_SUBTITLE_FILE, async (event, filePath: string) => {
+  // 字幕解析处理器
+  ipcMain.handle(IpcChannels.PARSE_SUBTITLE_FILE, async (_, filePath: string) => {
     console.log('解析字幕文件:', filePath);
-    // TODO: 实现字幕解析逻辑
-    return { subtitles: [], fileName: filePath, format: 'srt', words: [] };
+    try {
+      const result = await subtitleParser.parseFile(filePath);
+      console.log(`字幕解析成功: ${result.subtitles.length} 条字幕, ${result.words.length} 个单词`);
+      return result;
+    } catch (error) {
+      console.error('字幕解析失败:', error);
+      throw error;
+    }
   });
 
-  ipcMain.handle(IpcChannels.TRANSLATE_WORD, async (event, word: string) => {
+  ipcMain.handle(IpcChannels.TRANSLATE_WORD, async (_, word: string) => {
     console.log('翻译单词:', word);
     // TODO: 实现词典查询逻辑
     return { word, translations: ['暂未实现'], phonetic: '', definitions: [], examples: [] };
