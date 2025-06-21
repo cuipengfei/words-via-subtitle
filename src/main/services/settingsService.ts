@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { app } from 'electron';
-import { AppSettings } from '@/shared/ipc';
+import { AppSettings } from '../../shared/ipc';
 
 /**
  * 应用设置服务

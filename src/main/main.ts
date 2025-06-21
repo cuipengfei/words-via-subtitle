@@ -1,11 +1,17 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import { join } from 'path';
+import { app, BrowserWindow } from 'electron';
+import * as path from 'path';
+import * as url from 'url';
 import isDev from 'electron-is-dev';
-import prepareNext from 'electron-next';
-import { createMenu } from './menu';
+import { registerIpcHandlers } from './ipc-handlers';
+import { SubtitleParserService } from './services/subtitleParser';
+import { DictionaryService } from './services/dictionaryService';
 
 // 全局保存对主窗口的引用
 let mainWindow: BrowserWindow | null = null;
+
+// 服务实例
+let subtitleParser: SubtitleParserService;
+let dictionaryService: DictionaryService;
 
 // 确保只有一个应用实例运行
 const gotTheLock = app.requestSingleInstanceLock();
@@ -25,33 +31,43 @@ if (!gotTheLock) {
 
 // 准备并启动应用
 async function createWindow() {
-  // 首先准备Next.js
-  await prepareNext('./src/renderer');
+  // 在开发模式下，我们假设 Next.js 开发服务器已经在运行
+
+  // 初始化服务
+  subtitleParser = new SubtitleParserService();
+  dictionaryService = new DictionaryService();
+
+  try {
+    await dictionaryService.initialize();
+    console.log('词典服务初始化成功');
+  } catch (error) {
+    console.error('词典服务初始化失败:', error);
+  }
+
+  // 注册IPC处理器
+  registerIpcHandlers(subtitleParser, dictionaryService);
 
   // 创建主窗口
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
-      preload: isDev
-        ? join(__dirname, '../../dist/main/preload.js')
-        : join(__dirname, 'preload.js'),
+      nodeIntegration: false,
     },
-    // 暂时移除图标，稍后添加
-    // icon: join(app.getAppPath(), 'assets', 'icons', 'icon.png'),
   });
 
-  // 创建应用菜单
-  createMenu(mainWindow);
-
   // 加载应用
-  const url = isDev
+  const loadURL = isDev
     ? 'http://localhost:3000'
-    : `file://${join(__dirname, '../renderer/out/index.html')}`;
+    : url.format({
+        pathname: path.join(__dirname, '../renderer/out/index.html'),
+        protocol: 'file:',
+        slashes: true,
+      });
 
-  await mainWindow.loadURL(url);
+  mainWindow.loadURL(loadURL);
 
   // 在开发环境打开开发者工具
   if (isDev) {

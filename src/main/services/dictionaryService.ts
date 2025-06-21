@@ -1,18 +1,7 @@
-import { ipcMain } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { app } from 'electron';
-import { TranslationResult, Definition } from '@/shared/ipc';
-
-// 本地词典数据接口
-interface DictionaryEntry {
-  word: string;
-  phonetic?: string;
-  definition: string;
-  translation: string;
-  examples?: string[];
-  partOfSpeech?: string;
-}
+import type { DictionaryEntry } from '../../shared/types';
 
 // 词典服务类
 export class DictionaryService {
@@ -31,12 +20,6 @@ export class DictionaryService {
   public async initialize(): Promise<void> {
     // 加载本地词典
     await this.loadLocalDictionary();
-
-    // 注册IPC处理程序
-    ipcMain.handle('lookup-word', async (_, word: string) => {
-      return this.lookupWord(word);
-    });
-
     console.log('词典服务初始化完成');
   }
 
@@ -49,22 +32,41 @@ export class DictionaryService {
       try {
         await fs.access(this.localDictionaryPath);
       } catch {
-        // 如果文件不存在，加载内置的基本词典
-        const builtInDictionaryPath = path.join(
-          app.getAppPath(),
-          'assets',
-          'built-in-dictionary.json'
+        // 如果文件不存在，创建一个包含示例数据的基本词典
+        const basicDictionary: DictionaryEntry[] = [
+          {
+            word: 'hello',
+            phonetic: '/həˈloʊ/',
+            definition: 'Used as a greeting or to begin a phone conversation.',
+            translation: '你好；喂（用于打招呼或开始电话对话）',
+            examples: ['Hello, how are you?', 'Hello, this is John speaking.'],
+            partOfSpeech: 'interjection',
+          },
+          {
+            word: 'world',
+            phonetic: '/wɜːrld/',
+            definition: 'The earth, together with all of its countries and peoples.',
+            translation: '世界；地球',
+            examples: ['The world is full of wonders.', 'She traveled around the world.'],
+            partOfSpeech: 'noun',
+          },
+          {
+            word: 'learn',
+            phonetic: '/lɜːrn/',
+            definition:
+              'Gain or acquire knowledge of or skill in (something) by study, experience, or being taught.',
+            translation: '学习；学会',
+            examples: ['I want to learn Spanish.', 'Children learn quickly.'],
+            partOfSpeech: 'verb',
+          },
+        ];
+
+        await fs.writeFile(
+          this.localDictionaryPath,
+          JSON.stringify(basicDictionary, null, 2),
+          'utf-8'
         );
-        try {
-          // 尝试复制内置词典
-          const builtInData = await fs.readFile(builtInDictionaryPath, 'utf-8');
-          await fs.writeFile(this.localDictionaryPath, builtInData, 'utf-8');
-          console.log('已创建本地词典文件');
-        } catch (err) {
-          console.error('无法创建本地词典文件:', err);
-          // 创建一个空的词典文件
-          await fs.writeFile(this.localDictionaryPath, JSON.stringify([]), 'utf-8');
-        }
+        console.log('已创建基本词典文件');
       }
 
       // 读取词典文件
@@ -83,6 +85,7 @@ export class DictionaryService {
       this.dictionaryLoaded = false;
     }
   }
+
   /**
    * 查询单词
    */
@@ -95,84 +98,8 @@ export class DictionaryService {
       return localEntry;
     }
 
-    // 如果本地词典没有，尝试在线查询 (将在后续实现)
-    // 这里将添加在线词典API调用
-
-    // 暂时返回null
+    // 如果本地词典没有，返回null
+    // 将来可以在这里添加在线词典API调用
     return null;
-  }
-
-  /**
-   * 翻译单词
-   * @param word 要翻译的单词
-   * @returns 翻译结果
-   */
-  public async translate(word: string): Promise<TranslationResult> {
-    const normalizedWord = word.toLowerCase().trim();
-    const entry = await this.lookupWord(normalizedWord);
-
-    // 构建翻译结果
-    const result: TranslationResult = {
-      word: word,
-      translations: [],
-      definitions: [],
-    };
-
-    if (entry) {
-      result.translations = [entry.translation];
-      result.phonetic = entry.phonetic;
-
-      // 处理定义
-      const definition: Definition = {
-        partOfSpeech: entry.partOfSpeech || 'unknown',
-        meaning: entry.definition,
-        examples: entry.examples || [],
-      };
-
-      result.definitions = [definition];
-      result.examples = entry.examples || [];
-    } else {
-      // 如果本地词典未找到，尝试在线API（后续实现）
-      console.log(`未找到单词 "${word}" 的翻译，将在未来版本支持在线查询`);
-    }
-
-    return result;
-  }
-
-  /**
-   * 获取单词的详细定义
-   * @param word 要查询的单词
-   * @returns 详细定义结果
-   */
-  public async getDefinition(word: string): Promise<TranslationResult> {
-    // 与translate方法基本相同，但可以提供更详细的信息
-    // 当前版本暂时复用translate方法
-    return this.translate(word);
-  }
-
-  /**
-   * 添加或更新词典条目
-   */
-  public async addOrUpdateEntry(entry: DictionaryEntry): Promise<void> {
-    const normalizedWord = entry.word.toLowerCase().trim();
-
-    // 更新内存中的条目
-    this.localDictionary.set(normalizedWord, entry);
-
-    // 保存到文件
-    await this.saveLocalDictionary();
-  }
-
-  /**
-   * 保存本地词典到文件
-   */
-  private async saveLocalDictionary(): Promise<void> {
-    try {
-      const entries = Array.from(this.localDictionary.values());
-      await fs.writeFile(this.localDictionaryPath, JSON.stringify(entries, null, 2), 'utf-8');
-      console.log('本地词典已保存');
-    } catch (error) {
-      console.error('保存本地词典失败:', error);
-    }
   }
 }

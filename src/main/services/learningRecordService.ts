@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { app } from 'electron';
 import Store from 'electron-store';
-import { WordStatus, LearnedWord } from '@/shared/ipc';
+import { WordStatus, LearnedWord } from '../../shared/ipc';
 
 // 定义存储结构的类型
 interface LearningRecordSchema {

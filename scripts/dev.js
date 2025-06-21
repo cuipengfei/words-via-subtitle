@@ -23,7 +23,7 @@ let nextProcess = null;
 function startNextDev() {
   console.log('Starting Next.js development server...');
 
-  nextProcess = spawn('npm', ['run', 'dev:next'], {
+  nextProcess = spawn('bun', ['run', 'dev:next'], {
     shell: true,
     env: process.env,
     stdio: 'inherit',
@@ -73,14 +73,16 @@ function waitForNextReady() {
   return new Promise((resolve) => {
     // 检查Next.js是否准备就绪
     const checkNextReady = () => {
+      console.log(`Checking for Next.js server at http://localhost:${port}...`);
       const req = require('http').get(`http://localhost:${port}`, (res) => {
+        console.log(`Received status code: ${res.statusCode}`);
         if (res.statusCode === 200) {
           clearInterval(interval);
           resolve();
         }
       });
-      req.on('error', () => {
-        // 如果请求出错，忽略，继续等待
+      req.on('error', (err) => {
+        console.error('Error checking Next.js server:', err.message);
       });
       req.end();
     };

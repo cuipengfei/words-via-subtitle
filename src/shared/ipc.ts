@@ -3,31 +3,13 @@ import { IpcMainInvokeEvent } from 'electron';
 
 // IPC通道名称常量
 export const IpcChannels = {
-  // 字幕相关
-  PARSE_SUBTITLE_FILE: 'parse-subtitle-file',
-  GET_SUBTITLES: 'get-subtitles',
-  GET_SUBTITLE_AT_TIME: 'get-subtitle-at-time',
-  GET_WORDS_NEAR_TIME: 'get-words-near-time',
-  GET_WORD_MAPPINGS: 'get-word-mappings',
-
-  // 词典相关
-  TRANSLATE_WORD: 'translate-word',
-  GET_WORD_DEFINITION: 'get-word-definition',
-
-  // 学习记录相关
-  SAVE_LEARNED_WORD: 'save-learned-word',
-  GET_LEARNED_WORDS: 'get-learned-words',
-  UPDATE_WORD_STATUS: 'update-word-status',
-
-  // 文件操作
-  OPEN_VIDEO_FILE: 'open-video-file',
   OPEN_SUBTITLE_FILE: 'open-subtitle-file',
-  SAVE_CONFIG: 'save-config',
+  PARSE_SUBTITLE_FILE: 'parse-subtitle-file',
+  LOOKUP_WORD: 'lookup-word', // 新增：用于查询单词
+} as const;
 
-  // 应用设置
-  GET_SETTINGS: 'get-settings',
-  UPDATE_SETTINGS: 'update-settings',
-};
+export type IpcChannelKeys = keyof typeof IpcChannels;
+export type IpcChannelValues = (typeof IpcChannels)[IpcChannelKeys];
 
 // 字幕相关类型
 export interface Subtitle {
@@ -129,3 +111,6 @@ export interface ElectronAPI {
   // 系统功能
   isDevMode: () => boolean;
 }
+
+export type IpcChannel = keyof typeof IpcChannels;
+export type IpcChannelValue = (typeof IpcChannels)[IpcChannel];

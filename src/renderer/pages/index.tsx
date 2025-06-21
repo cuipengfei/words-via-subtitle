@@ -1,53 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Head from 'next/head';
+import type { SubtitleEntry, Word, DictionaryEntry } from '@shared/types';
 
 export default function Home() {
-  const [subtitle, setSubtitle] = useState<string | null>(null);
-  const [videoPath, setVideoPath] = useState<string | null>(null);
-  const [subtitleData, setSubtitleData] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [subtitleEntries, setSubtitleEntries] = useState<SubtitleEntry[]>([]);
+  const [words, setWords] = useState<Word[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [wordDefinition, setWordDefinition] = useState<DictionaryEntry | null>(null);
+  const [isLookingUp, setIsLookingUp] = useState(false);
 
-  useEffect(() => {
-    // 检查是否在 Electron 环境中
-    if (typeof window !== 'undefined' && window.electron) {
-      console.log('Electron API 可用');
+  const handleFileSelect = async () => {
+    setError(null);
+    setSubtitleEntries([]);
+    setWords([]);
+    setSelectedFileName(null);
 
-      // 监听来自主进程的文件打开事件
-      const { ipcRenderer } = window.require('electron');
+    try {
+      // 1. 调用主进程API打开文件选择对话框
+      const filePath = await window.electronAPI.openSubtitleFile();
 
-      // 监听字幕文件打开
-      ipcRenderer.on('file-opened', async (event: any, filePath: string) => {
-        console.log('收到字幕文件路径:', filePath);
-        setSubtitle(filePath);
-        setLoading(true);
+      if (filePath) {
+        // 从完整路径中提取文件名用于显示
+        const fileName = filePath.split('\\').pop()?.split('/').pop() || filePath;
+        setSelectedFileName(fileName);
 
-        try {
-          // 调用字幕解析 API
-          const result = await window.electron.parseSubtitleFile(filePath);
-          setSubtitleData(result);
-          console.log('字幕解析结果:', result);
-        } catch (error) {
-          console.error('字幕解析失败:', error);
-        } finally {
-          setLoading(false);
+        // 2. 调用主进程API解析文件
+        const result = await window.electronAPI.parseSubtitleFile(filePath);
+
+        // 3. 处理解析结果
+        if (result.success && result.data) {
+          setSubtitleEntries(result.data.entries);
+          setWords(result.data.words);
+        } else {
+          setError(result.error || '未知解析错误');
         }
-      });
-
-      // 监听视频文件打开
-      ipcRenderer.on('video-opened', (event: any, filePath: string) => {
-        console.log('收到视频文件路径:', filePath);
-        setVideoPath(filePath);
-      });
-
-      // 清理函数
-      return () => {
-        ipcRenderer.removeAllListeners('file-opened');
-        ipcRenderer.removeAllListeners('video-opened');
-      };
-    } else {
-      console.log('非 Electron 环境，使用模拟数据');
+      }
+    } catch (err) {
+      console.error('Error selecting or parsing file:', err);
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
-  }, []);
+  };
+
+  const handleWordClick = async (word: string) => {
+    setSelectedWord(word);
+    setIsLookingUp(true);
+    setWordDefinition(null);
+
+    try {
+      const definition = await window.electronAPI.lookupWord(word);
+      setWordDefinition(definition);
+    } catch (err) {
+      console.error('查询单词失败:', err);
+      setError(`查询单词 "${word}" 失败`);
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
 
   return (
     <>
@@ -57,64 +67,129 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="flex min-h-screen flex-col items-center justify-between p-6">
-        <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
-          <h1 className="text-3xl font-bold mb-4 text-center">字幕学单词</h1>
+      <main className="container mx-auto p-4 font-sans bg-gray-50 min-h-screen">
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">字幕学单词</h1>
+          <p className="text-lg text-gray-600">通过您最喜爱的电影和电视节目学习新单词</p>
+        </header>
 
-          {!subtitle && !videoPath && (
-            <div className="text-center p-8">
-              <p className="mb-4">欢迎使用字幕学单词！</p>
-              <p>使用菜单栏中的&quot;文件 &gt; 打开字幕文件&quot;开始学习</p>
-            </div>
-          )}
+        <div className="text-center mb-8">
+          <button
+            onClick={handleFileSelect}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
+          >
+            选择字幕文件 (.srt, .ass)
+          </button>
+        </div>
 
-          {loading && (
-            <div className="text-center p-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2">正在解析字幕文件...</p>
-            </div>
-          )}
+        {selectedFileName && (
+          <p className="text-center text-gray-600 mb-4">已选择文件: {selectedFileName}</p>
+        )}
 
-          {subtitle && !loading && (
-            <div className="mb-4 p-4 border rounded">
-              <h2 className="text-xl font-bold mb-2">已加载字幕文件</h2>
-              <p className="break-all text-sm text-gray-600 mb-2">{subtitle}</p>
-              {subtitleData && (
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500">
-                    解析结果：{subtitleData.subtitles?.length || 0} 条字幕，
-                    {subtitleData.words?.length || 0} 个单词
-                  </p>
-                  {subtitleData.subtitles?.length > 0 && (
-                    <div className="mt-2 max-h-40 overflow-y-auto">
-                      <h3 className="font-semibold mb-1">字幕预览：</h3>
-                      {subtitleData.subtitles.slice(0, 3).map((sub: any, index: number) => (
-                        <div key={index} className="text-sm bg-gray-50 p-2 mb-1 rounded">
-                          <span className="text-blue-600">
-                            [{Math.floor(sub.startTime / 1000)}s]
-                          </span>{' '}
-                          {sub.text}
-                        </div>
-                      ))}
-                      {subtitleData.subtitles.length > 3 && (
-                        <p className="text-xs text-gray-400">
-                          ...还有 {subtitleData.subtitles.length - 3} 条字幕
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
+        {error && (
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6"
+            role="alert"
+          >
+            <strong className="font-bold">错误:</strong>
+            <span className="block sm:inline"> {error}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">字幕内容</h2>
+            <div className="h-96 overflow-y-auto pr-2">
+              {subtitleEntries.length > 0 ? (
+                <ul className="space-y-2">
+                  {subtitleEntries.map((entry) => (
+                    <li key={entry.id} className="p-3 bg-gray-100 rounded-md text-gray-800">
+                      <span className="font-mono text-sm text-gray-500 mr-4">
+                        {entry.startTime} --&gt; {entry.endTime}
+                      </span>
+                      <p className="inline">{entry.text}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">请先选择一个字幕文件来查看内容。</p>
               )}
             </div>
-          )}
+          </div>
 
-          {videoPath && (
-            <div className="p-4 border rounded">
-              <h2 className="text-xl font-bold mb-2">已加载视频文件</h2>
-              <p className="break-all text-sm text-gray-600">{videoPath}</p>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">单词列表</h2>
+            <div className="h-96 overflow-y-auto pr-2">
+              {words.length > 0 ? (
+                <ul className="space-y-2">
+                  {words.map((word) => (
+                    <li
+                      key={word.original}
+                      className="p-3 bg-gray-100 rounded-md flex justify-between items-center hover:bg-blue-50 cursor-pointer transition-colors"
+                      onClick={() => handleWordClick(word.original)}
+                    >
+                      <span className="font-semibold text-gray-800">{word.original}</span>
+                      <span className="text-sm text-gray-500">({word.count}次)</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">这里将显示从字幕中提取的单词。</p>
+              )}
             </div>
-          )}
+          </div>
         </div>
+
+        {/* 单词释义显示区域 */}
+        {(selectedWord || wordDefinition || isLookingUp) && (
+          <div className="mt-8 bg-white p-6 rounded-lg shadow">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">单词释义</h2>
+            {isLookingUp ? (
+              <div className="text-center p-4">
+                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <p className="mt-2 text-gray-600">正在查询单词 "{selectedWord}"...</p>
+              </div>
+            ) : wordDefinition ? (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-gray-800">
+                  {wordDefinition.word}
+                  {wordDefinition.phonetic && (
+                    <span className="ml-2 text-sm text-gray-500 font-normal">
+                      [{wordDefinition.phonetic}]
+                    </span>
+                  )}
+                </h3>
+                {wordDefinition.partOfSpeech && (
+                  <p className="text-sm text-blue-600 font-medium">{wordDefinition.partOfSpeech}</p>
+                )}
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">释义:</h4>
+                  <p className="text-gray-800">{wordDefinition.definition}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">翻译:</h4>
+                  <p className="text-gray-800">{wordDefinition.translation}</p>
+                </div>
+                {wordDefinition.examples && wordDefinition.examples.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2">例句:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {wordDefinition.examples.map((example, index) => (
+                        <li key={index} className="text-gray-700">
+                          {example}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : selectedWord ? (
+              <div className="text-center p-4 text-gray-500">
+                未找到单词 "{selectedWord}" 的释义
+              </div>
+            ) : null}
+          </div>
+        )}
       </main>
     </>
   );

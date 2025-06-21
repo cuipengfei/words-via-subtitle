@@ -5,73 +5,193 @@
 - **Node.js**: v18.x 或更高版本
 - **包管理器**: Bun v1.2.16
 - **开发 IDE**: VS Code (推荐)
+- **操作系统**: Windows/macOS/Linux (当前在 Windows 环境开发)
 
 ## 技术栈详情
 
 ### 核心框架
 
 - **Electron**: v24.1.2 - 跨平台桌面应用框架
+  - 主进程 (Node.js 环境)：文件系统访问、系统 API 调用
+  - 渲染进程 (Chromium 环境)：Web UI 界面
+  - 预加载脚本：安全的 API 桥接
 - **Next.js**: v13.3.0 - React 应用开发框架
+  - 渲染进程的前端框架
+  - 支持 SSR/CSR 混合渲染
 - **React**: v18.2.0 - UI 库
+  - 函数组件 + Hooks 范式
+  - 状态管理：useState, useEffect 等内置 hooks
 - **TypeScript**: v5.0.4 - 类型安全的 JavaScript 超集
+  - 严格模式启用
+  - 共享类型定义确保前后端一致性
 
 ### 样式与 UI
 
 - **TailwindCSS**: v3.3.1 - 实用优先的 CSS 框架
-- **Headless UI**: v1.7.13 - 无样式组件库
-- **Heroicons**: v2.0.17 - SVG 图标集
+  - 响应式设计支持
+  - 深色模式预留
+  - 自定义设计系统
+- **CSS Modules**: Next.js 内置支持
+- **现代化 UI 设计**: 简洁、直观的用户界面
 
-### 主进程工具
+### 主进程技术
 
-- **Electron Store**: v8.1.0 - 数据持久化
-- **Electron Next**: v3.1.5 - Next.js 与 Electron 集成
-- **Subtitle**: v4.2.1 - 字幕文件解析库
+- **IPC 通信**: electron 内置的 ipcMain/ipcRenderer
+  - invoke/handle 异步模式
+  - contextBridge 安全 API 暴露
+- **文件系统**: Node.js fs 模块
+  - 字幕文件读取和解析
+  - 用户数据存储
+- **字幕解析**: 自建解析器
+  - 支持 SRT 格式（已实现）
+  - 支持 ASS 格式（已实现）
+  - 可扩展的解析策略模式
 
-### 开发工具
+### 服务架构
+
+- **SubtitleParserService**: 字幕文件解析服务
+  - 多格式支持 (SRT, ASS)
+  - 单词提取和词频统计
+  - 错误处理和用户反馈
+- **DictionaryService**: 词典查询服务
+  - 本地 JSON 词典
+  - 在线 API 集成预留
+  - 缓存机制
+
+### 开发工具链
 
 - **ESLint**: v9.29.0 - 代码质量工具
-- **Jest**: v30.0.2 - 测试框架
-- **Concurrently**: v9.1.2 - 并行执行命令
-- **Cross-env**: v7.0.3 - 跨平台环境变量
+  - 扁平配置格式
+  - TypeScript 和 React 规则集
+- **TypeScript Compiler**: 类型检查和编译
+  - 主进程：tsc 编译
+  - 渲染进程：Next.js 内置编译
+- **Bun**: 快速的包管理器和运行时
+  - 依赖安装和脚本执行
+  - 开发服务器启动
 
-## 项目结构
+## 项目结构与文件组织
 
 ```
 words-via-subtitle/
-├── assets/               # 静态资源
-├── config/               # 配置文件
-├── dist/                 # 构建输出
-├── docs/                 # 文档
-├── public/               # 公共资源
 ├── src/
-│   ├── main/             # Electron主进程代码
-│   │   ├── services/     # 主进程服务
-│   │   └── utils/        # 主进程工具函数
-│   ├── renderer/         # Next.js渲染进程代码
-│   │   ├── components/   # UI组件
-│   │   ├── hooks/        # React Hooks
-│   │   ├── pages/        # Next.js页面
-│   │   └── styles/       # 样式文件
-│   └── shared/           # 共享代码
-│       ├── constants/    # 常量
-│       ├── types/        # 类型定义
-│       └── utils/        # 共享工具函数
-├── eslint.config.js      # ESLint v9 扁平配置
-├── electron-tsconfig.json # Electron TypeScript配置
-├── package.json          # 项目依赖配置
-├── tailwind.config.js    # Tailwind配置
-└── tsconfig.json         # TypeScript配置
+│   ├── main/                    # Electron 主进程
+│   │   ├── main.ts             # 应用入口点
+│   │   ├── preload.ts          # 预加载脚本
+│   │   ├── ipc-handlers.ts     # IPC 请求处理器
+│   │   └── services/           # 业务服务层
+│   │       ├── subtitleParser.ts    # 字幕解析服务
+│   │       └── dictionaryService.ts # 词典查询服务
+│   ├── renderer/               # Next.js 渲染进程
+│   │   ├── pages/              # 页面组件
+│   │   │   └── index.tsx       # 主页面
+│   │   ├── components/         # UI 组件 (预留)
+│   │   ├── hooks/              # 自定义 Hooks (预留)
+│   │   ├── styles/             # 样式文件 (预留)
+│   │   └── types/              # 渲染进程类型定义
+│   │       └── renderer.d.ts   # electronAPI 类型声明
+│   └── shared/                 # 前后端共享代码
+│       ├── ipc.ts              # IPC 通道定义
+│       ├── types.ts            # 共享类型定义
+│       └── utils/              # 共享工具函数 (预留)
+├── .memory-bank/               # AI 助手记忆库
+├── config/                     # 构建配置
+├── assets/                     # 静态资源
+└── docs/                       # 项目文档
 ```
 
-## 构建与开发脚本
+## 构建与开发流程
 
-- **开发模式**: `bun run dev` - 并行启动 Electron 和 Next.js 开发服务器
-- **构建**: `bun run build` - 构建生产版本
-- **代码检查**: `bun run lint` - 运行 ESLint v9 代码检查
-- **测试**: `bun run test` - 运行 Jest 测试
+### 开发命令
 
-## 外部依赖
+- **`bun run dev`**: 启动开发模式
+  - 同时启动主进程和渲染进程
+  - 支持热重载
+- **`bun run build:electron`**: 构建主进程代码
+  - TypeScript 编译为 JavaScript
+- **`bun run build:renderer`**: 构建渲染进程代码
+  - Next.js 生产构建
+- **`bun run build`**: 完整应用构建
+- **`bun run lint`**: 代码质量检查
 
-- **操作系统**: Windows, macOS, Linux
-- **本地存储**: electron-store 用于数据持久化
-- **网络请求**: 用于在线词典 API 调用
+### 配置文件
+
+- **tsconfig.json**: 渲染进程 TypeScript 配置
+- **electron-tsconfig.json**: 主进程 TypeScript 配置
+- **eslint.config.js**: ESLint v9 扁平配置
+- **tailwind.config.js**: TailwindCSS 配置
+- **next.config.js**: Next.js 配置
+
+## 数据存储策略
+
+### 本地存储
+
+- **字幕解析结果**: 内存缓存，会话级别
+- **词典数据**: JSON 文件存储，应用级别
+- **用户学习记录**: 预留（考虑 electron-store）
+
+### 缓存机制
+
+- **解析缓存**: Map 结构，基于文件路径和修改时间
+- **词典缓存**: Map 结构，基于单词查询结果
+- **性能优化**: 懒加载 + LRU 淘汰策略 (预留)
+
+## 安全考虑
+
+### Electron 安全实践
+
+- **进程隔离**: 主进程和渲染进程严格分离
+- **节点集成禁用**: 渲染进程中禁用 Node.js 集成
+- **Context Bridge**: 使用安全的 API 桥接
+- **CSP**: 内容安全策略 (预留)
+
+### 代码安全
+
+- **类型安全**: TypeScript 严格模式
+- **输入验证**: 文件格式和内容验证
+- **错误处理**: 统一的异常捕获和用户反馈
+
+## 性能优化策略
+
+### 文件处理
+
+- **流式读取**: 处理大型字幕文件
+- **异步处理**: 非阻塞式文件操作
+- **内存管理**: 及时释放不需要的数据
+
+### UI 性能
+
+- **React 优化**: 合理使用 useMemo 和 useCallback
+- **虚拟滚动**: 大列表渲染优化 (预留)
+- **懒加载**: 按需加载组件和数据
+
+## 外部集成
+
+### 已实现
+
+- **本地文件系统**: 字幕文件读取
+- **本地词典**: JSON 格式词典数据
+
+### 计划集成
+
+- **在线词典 API**: 有道、百度翻译等
+- **用户数据同步**: 云端学习记录 (可选)
+- **系统通知**: 学习提醒功能
+
+## 兼容性支持
+
+### 字幕格式
+
+- **SRT**: ✅ 已支持 - 标准时间轴格式
+- **ASS**: ✅ 已支持 - 高级字幕格式
+- **VTT**: 📋 计划支持 - Web 字幕格式
+
+### 平台兼容
+
+- **Windows**: ✅ 主要开发和测试平台
+- **macOS**: 📋 计划支持
+- **Linux**: 📋 计划支持
+
+### 浏览器兼容
+
+- **Chromium**: ✅ Electron 内置支持

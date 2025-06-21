@@ -1,8 +1,6 @@
 import { app } from 'electron';
 import { SubtitleParserService } from './services/subtitleParser';
 import { DictionaryService } from './services/dictionaryService';
-import { LearningRecordService } from './services/learningRecordService';
-import { SettingsService } from './services/settingsService';
 import { registerIpcHandlers } from './ipc-handlers';
 
 /**
@@ -11,15 +9,9 @@ import { registerIpcHandlers } from './ipc-handlers';
  */
 export async function initializeServices(): Promise<void> {
   console.log('正在初始化应用服务...');
-
   try {
-    // 初始化设置服务
-    const settingsService = new SettingsService();
-    console.log('设置服务已初始化');
-
     // 初始化字幕解析服务
     const subtitleParserService = new SubtitleParserService();
-    await subtitleParserService.initialize();
     console.log('字幕解析服务已初始化');
 
     // 初始化词典服务
@@ -27,13 +19,8 @@ export async function initializeServices(): Promise<void> {
     await dictionaryService.initialize();
     console.log('词典服务已初始化');
 
-    // 初始化学习记录服务
-    const learningRecordService = new LearningRecordService();
-    await learningRecordService.initialize();
-    console.log('学习记录服务已初始化');
-
     // 注册IPC处理器
-    registerIpcHandlers();
+    registerIpcHandlers(subtitleParserService, dictionaryService);
     console.log('IPC处理器已注册');
 
     // 设置应用程序事件处理器
