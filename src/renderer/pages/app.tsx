@@ -1,10 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { TopBar } from '@/renderer/components/TopBar';
-import { WordList } from '@/renderer/components/WordList';
+import { WordList, WordListRef } from '@/renderer/components/WordList';
 import { WordDefinition } from '@/renderer/components/WordDefinition';
-import { EmptyState, Button } from '@/renderer/components/UI';
+import { VideoPlayer, VideoPlayerRef } from '@/renderer/components/VideoPlayer';
+import { SubtitleOverlay } from '@/renderer/components/SubtitleOverlay';
+import { StatusBar } from '@/renderer/components/StatusBar';
+import { useKeyboardShortcuts } from '@/renderer/hooks/useKeyboardShortcuts';
 import type { SubtitleEntry, Word, DictionaryEntry } from '@shared/types';
 import { FolderOpen } from 'lucide-react';
 
@@ -17,6 +20,16 @@ export default function AppPage() {
   const [wordDefinition, setWordDefinition] = useState<DictionaryEntry | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // 视频相关状态
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoFileName, setVideoFileName] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+
+  // 引用
+  const wordListRef = useRef<WordListRef>(null);
+  const videoPlayerRef = useRef<VideoPlayerRef>(null);
 
   const handleFileSelect = async () => {
     setError(null);
@@ -41,6 +54,69 @@ export default function AppPage() {
       setError(parseResult.error || 'Failed to parse subtitle file.');
     }
   };
+
+  const handleVideoSelect = async () => {
+    setError(null);
+
+    const filePath = await window.electronAPI.openVideoFile();
+    if (!filePath) {
+      return;
+    }
+
+    setVideoFileName(filePath.split(/[\\/]/).pop() || null);
+    // 创建本地文件URL用于视频播放
+    setVideoSrc(`file://${filePath}`);
+  };
+
+  const handleVideoTimeUpdate = (time: number) => {
+    setCurrentTime(time);
+  };
+
+  const handleVideoLoadedMetadata = (duration: number) => {
+    setVideoDuration(duration);
+  };
+
+  const handleWordClickFromSubtitle = (word: string, timestamp: number) => {
+    handleWordSelect(word);
+    // 可以选择是否跳转到对应时间点
+    setCurrentTime(timestamp / 1000);
+  };
+
+  const handleSubtitleClick = (timestamp: number) => {
+    setCurrentTime(timestamp);
+  };
+
+  // 单词导航功能
+  const navigateToWord = (direction: 'next' | 'prev') => {
+    if (words.length === 0) return;
+
+    const currentIndex = selectedWord ? words.findIndex((w) => w.original === selectedWord) : -1;
+    let newIndex: number;
+
+    if (direction === 'next') {
+      newIndex = currentIndex < words.length - 1 ? currentIndex + 1 : 0;
+    } else {
+      newIndex = currentIndex > 0 ? currentIndex - 1 : words.length - 1;
+    }
+
+    const newWord = words[newIndex];
+    if (newWord) {
+      handleWordSelect(newWord.original);
+    }
+  };
+
+  // 键盘快捷键配置
+  useKeyboardShortcuts({
+    onOpenSubtitle: handleFileSelect,
+    onOpenVideo: handleVideoSelect,
+    onTogglePlay: () => videoPlayerRef.current?.togglePlay(),
+    onSkipBackward: () => videoPlayerRef.current?.skipBackward(),
+    onSkipForward: () => videoPlayerRef.current?.skipForward(),
+    onFocusSearch: () => wordListRef.current?.focusSearch(),
+    onNextWord: () => navigateToWord('next'),
+    onPrevWord: () => navigateToWord('prev'),
+    onToggleFullscreen: () => videoPlayerRef.current?.toggleFullscreen(),
+  });
 
   const handleWordSelect = useCallback(async (word: string) => {
     setSelectedWord(word);
@@ -67,46 +143,98 @@ export default function AppPage() {
       <Head>
         <title>字幕学单词</title>
       </Head>
-      <div className="flex flex-col h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
-        <TopBar selectedFileName={selectedFileName} onOpenFile={handleFileSelect} />
+      <div className="flex flex-col h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans overflow-hidden min-w-[1000px]">
+        <TopBar
+          selectedFileName={selectedFileName}
+          videoFileName={videoFileName}
+          onOpenFile={handleFileSelect}
+          onOpenVideo={handleVideoSelect}
+        />
         <div className="flex-1 overflow-hidden">
-          <PanelGroup direction="horizontal">
-            <Panel defaultSize={30} minSize={20} maxSize={40}>
-              {words.length > 0 ? (
-                <WordList
-                  words={words}
-                  selectedWord={selectedWord}
-                  searchTerm={searchTerm}
-                  onSearch={setSearchTerm}
-                  onSelectWord={handleWordSelect}
-                />
-              ) : (
-                <EmptyState
-                  icon={<FolderOpen size={64} />}
-                  title="选择字幕文件开始学习"
-                  subtitle="支持 SRT 和 ASS 格式的字幕文件。系统将自动提取单词并统计词频，帮助您高效学习。"
-                  action={
-                    <Button onClick={handleFileSelect} size="lg">
-                      <FolderOpen size={18} />
-                      选择SRT/ASS文件
-                    </Button>
-                  }
-                  className="bg-white dark:bg-gray-900"
-                />
-              )}
-            </Panel>
-            <PanelResizeHandle className="w-2 bg-gray-200 dark:bg-gray-700 hover:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-200 cursor-col-resize group relative">
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-gray-300 dark:bg-gray-600 group-hover:bg-indigo-400 transition-colors duration-200 rounded-full"></div>
-            </PanelResizeHandle>
-            <Panel>
-              <WordDefinition
-                definition={wordDefinition}
-                isLoading={isLookingUp}
-                selectedWord={selectedWord}
-              />
-            </Panel>
-          </PanelGroup>
-        </div>{' '}
+          {/* 三栏布局 */}
+          <div className="h-full">
+            <PanelGroup direction="horizontal">
+              {/* 左栏：单词列表 */}
+              <Panel defaultSize={25} minSize={20} maxSize={40}>
+                <div className="animate-slide-in-left h-full overflow-hidden">
+                  {words.length > 0 ? (
+                    <WordList
+                      ref={wordListRef}
+                      words={words}
+                      selectedWord={selectedWord}
+                      searchTerm={searchTerm}
+                      onSearch={setSearchTerm}
+                      onSelectWord={handleWordSelect}
+                      onWordTimeClick={handleSubtitleClick}
+                    />
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
+                      <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                        <FolderOpen size={32} className="text-white" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">
+                        等待字幕文件
+                      </h3>
+                      <p className="text-center text-sm leading-relaxed max-w-sm">
+                        使用顶部工具栏选择字幕文件，系统将自动提取单词并统计词频。
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Panel>
+
+              <PanelResizeHandle className="w-2 bg-gray-200 dark:bg-gray-700 hover:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-200 cursor-col-resize group relative">
+                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-gray-300 dark:bg-gray-600 group-hover:bg-indigo-400 transition-colors duration-200 rounded-full"></div>
+              </PanelResizeHandle>
+
+              {/* 中栏：视频播放器 */}
+              <Panel defaultSize={50} minSize={35} maxSize={65}>
+                <div className="h-full bg-gray-50 dark:bg-gray-950 relative animate-scale-in overflow-hidden">
+                  <VideoPlayer
+                    ref={videoPlayerRef}
+                    videoSrc={videoSrc}
+                    currentTime={currentTime}
+                    onTimeUpdate={handleVideoTimeUpdate}
+                    onLoadedMetadata={handleVideoLoadedMetadata}
+                    className="h-full"
+                  />
+
+                  {/* 字幕覆盖层 */}
+                  {videoSrc && subtitleEntries.length > 0 && (
+                    <SubtitleOverlay
+                      subtitles={subtitleEntries}
+                      currentTime={currentTime}
+                      onWordClick={handleWordClickFromSubtitle}
+                    />
+                  )}
+                </div>
+              </Panel>
+
+              <PanelResizeHandle className="w-2 bg-gray-200 dark:bg-gray-700 hover:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-200 cursor-col-resize group relative">
+                <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-gray-300 dark:bg-gray-600 group-hover:bg-indigo-400 transition-colors duration-200 rounded-full"></div>
+              </PanelResizeHandle>
+
+              {/* 右栏：单词释义 */}
+              <Panel defaultSize={25} minSize={20} maxSize={40}>
+                <div className="animate-slide-in-right h-full overflow-hidden">
+                  <WordDefinition
+                    definition={wordDefinition}
+                    isLoading={isLookingUp}
+                    selectedWord={selectedWord}
+                  />
+                </div>
+              </Panel>
+            </PanelGroup>
+          </div>
+        </div>
+
+        {/* 状态栏 */}
+        <StatusBar
+          totalWords={words.length}
+          selectedWord={selectedWord}
+          currentTime={currentTime}
+          videoDuration={videoDuration}
+        />
         {error && (
           <div
             className="fixed top-20 left-1/2 -translate-x-1/2 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg max-w-md z-50 animate-in slide-in-from-top-2 duration-300"

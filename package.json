@@ -30,7 +30,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "chokidar": "^3.6.0",
     "@eslint/js": "^9.29.0",
     "@types/autoprefixer": "^10.2.4",
     "@types/concurrently": "^7.0.3",
@@ -43,6 +42,7 @@
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
     "autoprefixer": "^10.4.21",
+    "chokidar": "^3.6.0",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^36.5.0",
@@ -54,6 +54,7 @@
     "jest": "^30.0.2",
     "node-loader": "^2.1.0",
     "postcss": "^8.5.6",
+    "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.10",
     "terser-webpack-plugin": "^5.3.14",
     "ts-jest": "^29.4.0",
@@ -74,6 +75,7 @@
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-perfect-scrollbar": "^1.5.8",
     "react-resizable-panels": "^3.0.3",
     "subtitle": "^4.2.1"
   },

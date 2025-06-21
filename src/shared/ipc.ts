@@ -6,6 +6,11 @@ export const IpcChannels = {
   OPEN_SUBTITLE_FILE: 'open-subtitle-file',
   PARSE_SUBTITLE_FILE: 'parse-subtitle-file',
   LOOKUP_WORD: 'lookup-word', // 新增：用于查询单词
+  OPEN_VIDEO_FILE: 'open-video-file', // 新增：用于选择视频文件
+  GET_SETTINGS: 'get-settings',
+  UPDATE_SETTINGS: 'update-settings',
+  SAVE_CONFIG: 'save-config',
+  UPDATE_WORD_STATUS: 'update-word-status',
 } as const;
 
 export type IpcChannelKeys = keyof typeof IpcChannels;

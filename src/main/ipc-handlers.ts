@@ -27,6 +27,24 @@ export function registerIpcHandlers(
     return result.filePaths[0];
   });
 
+  // 视频文件选择处理器
+  ipcMain.handle(IpcChannels.OPEN_VIDEO_FILE, async () => {
+    const result = await dialog.showOpenDialog({
+      title: '选择视频文件',
+      filters: [
+        { name: '视频文件', extensions: ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v'] },
+        { name: '所有文件', extensions: ['*'] },
+      ],
+      properties: ['openFile'],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+
+    return result.filePaths[0];
+  });
+
   // 字幕解析处理器
   ipcMain.handle(IpcChannels.PARSE_SUBTITLE_FILE, async (_, filePath: string) => {
     console.log(`主进程收到解析请求: ${filePath}`);

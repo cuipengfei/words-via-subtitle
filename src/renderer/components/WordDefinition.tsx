@@ -1,4 +1,5 @@
-import { BookOpenText, MessageCircleQuestion, Volume2 } from 'lucide-react';
+import { BookOpenText, MessageCircleQuestion, Volume2, Heart, Check, X } from 'lucide-react';
+import { ScrollContainer } from './ScrollContainer';
 import type { DictionaryEntry } from '@shared/types';
 
 const DefinitionSkeleton = () => (
@@ -73,11 +74,31 @@ export function WordDefinition({
             单词释义
           </h2>
         </div>
-        <EmptyState
-          icon={MessageCircleQuestion}
-          title="选择一个单词"
-          subtitle="从左侧列表中选择一个单词以查看其定义和用法示例。"
-        />
+        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-8">
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+            <MessageCircleQuestion size={32} className="text-white" />
+          </div>
+          <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">
+            选择一个单词
+          </h3>
+          <p className="text-center text-sm max-w-sm leading-relaxed mb-6">
+            从左侧列表中选择一个单词，或点击视频字幕中的单词，查看详细的释义和用法示例。
+          </p>
+          <div className="flex items-center gap-4 text-xs text-gray-400">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>英英释义</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span>中文翻译</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+              <span>例句展示</span>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -112,29 +133,46 @@ export function WordDefinition({
       </div>
 
       {/* 释义内容区域 - 独立滚动 */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <ScrollContainer className="flex-1 p-6">
         {/* 单词标题区 */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-              {definition.word}
-            </h3>
-            {definition.wordHeadTranslation && (
-              <span className="text-2xl font-medium text-indigo-600 dark:text-indigo-400">
-                {definition.wordHeadTranslation}
-              </span>
-            )}
-          </div>
-          {definition.phonetic && (
-            <div className="flex items-center gap-2">
-              <span className="text-lg text-gray-600 dark:text-gray-400 font-mono">
-                {definition.phonetic}
-              </span>
-              <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <Volume2 size={16} className="text-gray-500 dark:text-gray-400" />
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+                  {definition.word}
+                </h3>
+                {definition.wordHeadTranslation && (
+                  <span className="text-2xl font-medium text-indigo-600 dark:text-indigo-400">
+                    {definition.wordHeadTranslation}
+                  </span>
+                )}
+              </div>
+              {definition.phonetic && (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg text-gray-600 dark:text-gray-400 font-mono">
+                    {definition.phonetic}
+                  </span>
+                  <button className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <Volume2 size={16} className="text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 学习操作按钮 */}
+            <div className="flex items-center gap-2 ml-4">
+              <button className="p-2 rounded-lg bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 text-green-700 dark:text-green-300 transition-colors">
+                <Check size={18} />
+              </button>
+              <button className="p-2 rounded-lg bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 transition-colors">
+                <X size={18} />
+              </button>
+              <button className="p-2 rounded-lg bg-pink-100 hover:bg-pink-200 dark:bg-pink-900/30 dark:hover:bg-pink-900/50 text-pink-700 dark:text-pink-300 transition-colors">
+                <Heart size={18} />
               </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* 词性定义块 */}
@@ -194,7 +232,7 @@ export function WordDefinition({
             </div>
           </div>
         )}
-      </div>
+      </ScrollContainer>
     </div>
   );
 }

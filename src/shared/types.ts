@@ -5,9 +5,17 @@ export interface SubtitleEntry {
   text: string;
 }
 
+export interface WordOccurrence {
+  startTime: number; // 毫秒
+  endTime: number; // 毫秒
+  context: string; // 单词所在的字幕文本
+  subtitleId: number;
+}
+
 export interface Word {
   original: string;
   count: number;
+  occurrences?: WordOccurrence[]; // 单词在字幕中出现的所有位置
 }
 
 export interface ParseResult {

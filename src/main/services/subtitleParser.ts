@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { SubtitleEntry, Word, ParseResult } from '../../shared/types';
+import { SubtitleEntry, Word, WordOccurrence, ParseResult } from '../../shared/types';
 
 // A simple word tokenizer
 function tokenize(text: string): string[] {
@@ -142,16 +142,65 @@ export class SubtitleParserService {
    * @returns 单词数组
    */
   private extractWords(entries: SubtitleEntry[]): Word[] {
-    const wordMap = new Map<string, number>();
+    const wordMap = new Map<string, { count: number; occurrences: WordOccurrence[] }>();
+
     for (const entry of entries) {
       const tokens = tokenize(entry.text);
       for (const token of tokens) {
-        wordMap.set(token, (wordMap.get(token) || 0) + 1);
+        const existing = wordMap.get(token) || { count: 0, occurrences: [] };
+
+        // 将时间字符串转换为毫秒
+        const startTimeMs = this.timeStringToMs(entry.startTime);
+        const endTimeMs = this.timeStringToMs(entry.endTime);
+
+        existing.count += 1;
+        existing.occurrences.push({
+          startTime: startTimeMs,
+          endTime: endTimeMs,
+          context: entry.text,
+          subtitleId: entry.id,
+        });
+
+        wordMap.set(token, existing);
       }
     }
 
-    const sortedWords = Array.from(wordMap.entries()).sort((a, b) => b[1] - a[1]);
+    const sortedWords = Array.from(wordMap.entries()).sort((a, b) => b[1].count - a[1].count);
 
-    return sortedWords.map(([original, count]) => ({ original, count }));
+    return sortedWords.map(([original, data]) => ({
+      original,
+      count: data.count,
+      occurrences: data.occurrences,
+    }));
+  }
+
+  /**
+   * 将时间字符串转换为毫秒
+   * @param timeStr 时间字符串 (如 "00:01:23,456" 或 "0:01:23.45")
+   * @returns 毫秒数
+   */
+  private timeStringToMs(timeStr: string): number {
+    try {
+      // 处理 SRT 格式: "00:01:23,456"
+      if (timeStr.includes(',')) {
+        const [time, ms] = timeStr.split(',');
+        const [hours, minutes, seconds] = time.split(':').map(Number);
+        return hours * 3600000 + minutes * 60000 + seconds * 1000 + Number(ms);
+      }
+
+      // 处理 ASS 格式: "0:01:23.45"
+      if (timeStr.includes('.')) {
+        const [time, centiseconds] = timeStr.split('.');
+        const [hours, minutes, seconds] = time.split(':').map(Number);
+        return hours * 3600000 + minutes * 60000 + seconds * 1000 + Number(centiseconds) * 10;
+      }
+
+      // 默认处理: "00:01:23"
+      const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+      return hours * 3600000 + minutes * 60000 + seconds * 1000;
+    } catch (error) {
+      console.warn(`无法解析时间字符串: ${timeStr}`, error);
+      return 0;
+    }
   }
 }

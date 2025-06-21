@@ -50,13 +50,17 @@ async function createWindow() {
 
   // 创建主窗口
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1400,
+    height: 900,
+    minWidth: 1000,
+    minHeight: 700,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
+    titleBarStyle: 'default',
+    show: false, // 先不显示，等加载完成后再显示
   });
 
   // 加载应用
@@ -69,6 +73,11 @@ async function createWindow() {
       });
 
   mainWindow.loadURL(loadURL);
+
+  // 当页面加载完成后显示窗口
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show();
+  });
 
   // 创建应用菜单
   createMenu(mainWindow);
