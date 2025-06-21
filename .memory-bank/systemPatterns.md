@@ -2,37 +2,47 @@
 
 ## 总体架构
 
-项目采用 Electron 的主进程/渲染进程架构，结合 Next.js 作为渲染层：
+项目采用经典的 Electron 主进程/渲染进程分离架构，结合 Next.js 构建现代化桌面应用：
 
 ```mermaid
 flowchart TB
-    subgraph Electron[Electron 应用]
+    subgraph Electron[Electron 应用架构]
         subgraph MainProcess[主进程 - Node.js 环境]
-            M[main.ts] --> IPC[IPC处理器]
-            IPC --> SP[字幕解析服务]
-            IPC --> DS[词典服务]
-            IPC --> FS[文件系统]
-            SP -->|解析字幕| DataExtraction[数据提取]
-            DS --> |查询释义| LocalDict[本地词典]
+            Main[main.ts] --> Initialize[应用初始化]
+            Initialize --> Services[业务服务层]
+            Services --> SP[SubtitleParserService]
+            Services --> DS[DictionaryService]
+            Services --> LRS[LearningRecordService]
+            Services --> SS[SettingsService]
+
+            IPC[IPC处理器] --> Services
+            IPC --> FileSystem[文件系统操作]
         end
 
         subgraph RendererProcess[渲染进程 - Next.js]
-            UI[用户界面] --> StateManager[状态管理]
-            StateManager --> API[electronAPI]
-            API --> |调用| IPC
+            App[App页面] --> Layout[布局组件]
+            Layout --> TopBar[顶部工具栏]
+            Layout --> WordList[单词列表面板]
+            Layout --> WordDef[释义显示面板]
+
+            Components[React组件] --> ElectronAPI[electronAPI调用]
+            ElectronAPI --> |安全调用| IPC
         end
 
-        subgraph PreloadScript[预加载脚本]
-            Bridge[contextBridge] --> SafeAPI[安全API暴露]
+        subgraph PreloadScript[安全桥接层]
+            Preload[preload.ts] --> ContextBridge[contextBridge]
+            ContextBridge --> SafeAPI[类型安全API]
         end
 
-        MainProcess <-->|安全通信| PreloadScript
+        MainProcess <-->|IPC通信| PreloadScript
         PreloadScript --> RendererProcess
     end
 
-    subgraph External[外部资源]
-        Files[字幕文件 .srt/.ass] --> MainProcess
-        OnlineDict[在线词典API] -.-> DS
+    subgraph ExternalServices[外部服务]
+        Files[字幕文件 SRT/ASS] --> MainProcess
+        FreeDict[Free Dictionary API] --> DS
+        BingAPI[必应翻译API] --> DS
+        ElectronStore[electron-store] --> SS
     end
 ```
 
@@ -40,13 +50,23 @@ flowchart TB
 
 ### 1. 服务层模式 (Service Layer Pattern)
 
-每个业务功能都有专门的服务类负责：
+**设计理念**: 将业务逻辑封装在专门的服务类中，提供清晰的接口和职责分离
 
 ```typescript
-// 服务基础结构
+// 服务基础接口
 interface Service {
   initialize(): Promise<void>;
-  cleanup(): void;
+  cleanup?(): void;
+}
+
+// 实现示例
+class SubtitleParserService implements Service {
+  async initialize() {
+    /* 初始化逻辑 */
+  }
+  async parseFile(filePath: string): Promise<ParseResult> {
+    /* 解析逻辑 */
+  }
 }
 
 // 具体服务实现
@@ -55,7 +75,7 @@ class SubtitleParserService implements Service {
 }
 
 class DictionaryService implements Service {
-  // 单一职责：词典查询
+  // 单一职责：在线词典查询和翻译
 }
 ```
 

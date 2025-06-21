@@ -4,6 +4,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { TopBar } from '@/renderer/components/TopBar';
 import { WordList } from '@/renderer/components/WordList';
 import { WordDefinition } from '@/renderer/components/WordDefinition';
+import { EmptyState, Button } from '@/renderer/components/UI';
 import type { SubtitleEntry, Word, DictionaryEntry } from '@shared/types';
 import { FolderOpen } from 'lucide-react';
 
@@ -67,7 +68,7 @@ export default function AppPage() {
         <title>字幕学单词</title>
       </Head>
       <div className="flex flex-col h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
-        <TopBar selectedFileName={selectedFileName} />
+        <TopBar selectedFileName={selectedFileName} onOpenFile={handleFileSelect} />
         <div className="flex-1 overflow-hidden">
           <PanelGroup direction="horizontal">
             <Panel defaultSize={30} minSize={20} maxSize={40}>
@@ -75,28 +76,27 @@ export default function AppPage() {
                 <WordList
                   words={words}
                   selectedWord={selectedWord}
-                  searchTerm={searchTerm}
-                  onSearch={setSearchTerm}
+                  searchTerm={searchTerm}                  onSearch={setSearchTerm}
                   onSelectWord={handleWordSelect}
                 />
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400 p-8">
-                  <FolderOpen size={64} className="mb-4 text-slate-300 dark:text-slate-600" />
-                  <h3 className="text-lg font-semibold mb-2">打开文件</h3>
-                  <p className="text-center text-sm max-w-sm mb-4">
-                    通过点击下面的按钮来选择一个字幕文件开始学习
-                  </p>
-                  <button
-                    onClick={handleFileSelect}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                  >
-                    <FolderOpen size={16} />
-                    选择字幕文件
-                  </button>
-                </div>
+                <EmptyState
+                  icon={<FolderOpen size={64} />}
+                  title="选择字幕文件开始学习"
+                  subtitle="支持 SRT 和 ASS 格式的字幕文件。系统将自动提取单词并统计词频，帮助您高效学习。"
+                  action={
+                    <Button onClick={handleFileSelect} size="lg">
+                      <FolderOpen size={18} />
+                      选择SRT/ASS文件
+                    </Button>
+                  }
+                  className="bg-white dark:bg-gray-900"
+                />
               )}
             </Panel>
-            <PanelResizeHandle className="w-1 bg-gray-200 dark:bg-gray-800 hover:bg-indigo-500 transition-colors duration-200" />
+            <PanelResizeHandle className="w-2 bg-gray-200 dark:bg-gray-700 hover:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-200 cursor-col-resize group relative">
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-1 bg-gray-300 dark:bg-gray-600 group-hover:bg-indigo-400 transition-colors duration-200 rounded-full"></div>
+            </PanelResizeHandle>
             <Panel>
               <WordDefinition
                 definition={wordDefinition}
@@ -105,28 +105,28 @@ export default function AppPage() {
               />
             </Panel>
           </PanelGroup>
-        </div>
-        {error && (
+        </div>        {error && (
           <div
-            className="absolute top-14 left-1/2 -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md shadow-lg"
+            className="fixed top-20 left-1/2 -translate-x-1/2 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg max-w-md z-50 animate-in slide-in-from-top-2 duration-300"
             role="alert"
           >
-            <strong className="font-bold">错误!</strong>
-            <span className="block sm:inline"> {error}</span>
-            <span
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setError(null)}
-            >
-              <svg
-                className="fill-current h-6 w-6 text-red-500"
-                role="button"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-200 flex items-center justify-center mt-0.5">
+                <span className="text-red-600 text-xs font-bold">!</span>
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold text-sm mb-1">操作失败</div>
+                <div className="text-sm leading-relaxed">{error}</div>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="flex-shrink-0 text-red-400 hover:text-red-600 transition-colors p-1"
               >
-                <title>Close</title>
-                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
-              </svg>
-            </span>
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
           </div>
         )}
       </div>

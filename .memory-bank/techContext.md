@@ -1,74 +1,96 @@
 # 技术环境与配置
 
-## 🎉 当前状态：MVP 已达成 (2025-06-21)
+## � 当前状态：MVP 已达成，进入优化阶段 (2025 年 6 月)
 
-**应用完全可用** - 所有核心技术组件正常工作，用户体验完整！
+**应用完全可用** - 核心功能稳定运行，现代化 UI 完成，技术架构成熟！
 
-### 技术架构验证成功
+### 技术栈成熟度评估
 
-- ✅ **Electron + Next.js 集成** - 稳定运行，热重载正常
-- ✅ **TypeScript 类型安全** - 前后端类型统一，零错误
-- ✅ **IPC 通信机制** - 主进程与渲染进程通信完全正常
-- ✅ **服务层架构** - 字幕解析、词典查询服务正常工作
-- ✅ **开发环境** - 构建、调试、热重载全部正常
+- ✅ **Electron 36.5.0** - 主进程架构稳定，IPC 通信完善
+- ✅ **Next.js 15.3.4** - 渲染层现代化，组件系统完整
+- ✅ **TypeScript 5.8.3** - 类型安全贯穿全栈，零类型错误
+- ✅ **TailwindCSS 4.1.10** - 现代化 UI 设计系统完成
+- ✅ **业务服务层** - 字幕解析、词典查询服务生产就绪
 
 ## 开发环境
 
-- **Node.js**: v18.x 或更高版本
-- **包管理器**: Bun v1.2.16
-- **开发 IDE**: VS Code (推荐)
-- **操作系统**: Windows/macOS/Linux (当前在 Windows 环境开发)
+- **运行时**: Node.js v18.x+ (推荐 v20+)
+- **包管理器**: Bun v1.2.16 (高性能 JavaScript 运行时)
+- **开发工具**: VS Code + Electron/TypeScript 扩展
+- **目标平台**: Windows/macOS/Linux (当前 Windows 环境验证)
 
-## 技术栈详情
+## 核心技术栈详情
 
-### 核心框架
+### 桌面应用框架
 
-- **Electron**: v24.1.2 - 跨平台桌面应用框架
-  - 主进程 (Node.js 环境)：文件系统访问、系统 API 调用
-  - 渲染进程 (Chromium 环境)：Web UI 界面
-  - 预加载脚本：安全的 API 桥接
-- **Next.js**: v13.3.0 - React 应用开发框架
-  - 渲染进程的前端框架
-  - 支持 SSR/CSR 混合渲染
-- **React**: v18.2.0 - UI 库
-  - 函数组件 + Hooks 范式
-  - 状态管理：useState, useEffect 等内置 hooks
-- **TypeScript**: v5.0.4 - 类型安全的 JavaScript 超集
-  - 严格模式启用
-  - 共享类型定义确保前后端一致性
+**Electron 36.5.0**
 
-### 样式与 UI
+- **主进程**: Node.js 环境，负责系统调用、文件操作、业务逻辑
+- **渲染进程**: Chromium 环境，运行 Next.js 应用
+- **预加载脚本**: 安全的主进程-渲染进程 API 桥接
+- **特性**: 单例模式、原生菜单、窗口管理、开发者工具集成
 
-- **TailwindCSS**: v3.3.1 - 实用优先的 CSS 框架
-  - 响应式设计支持
-  - 深色模式预留
-  - 自定义设计系统
-- **CSS Modules**: Next.js 内置支持
-- **现代化 UI 设计**: 简洁、直观的用户界面
+### 前端技术栈
 
-### 主进程技术
+**Next.js 15.3.4 + React 19.1.0**
 
-- **IPC 通信**: electron 内置的 ipcMain/ipcRenderer
-  - invoke/handle 异步模式
-  - contextBridge 安全 API 暴露
-- **文件系统**: Node.js fs 模块
-  - 字幕文件读取和解析
-  - 用户数据存储
-- **字幕解析**: 自建解析器
-  - 支持 SRT 格式（已实现）
-  - 支持 ASS 格式（已实现）
-  - 可扩展的解析策略模式
+- **架构**: 函数组件 + React Hooks 模式
+- **路由**: 文件系统路由，pages 目录结构
+- **状态管理**: React 内置 useState/useEffect + 组件状态提升
+- **特性**: 组件化设计、响应式布局、现代化交互
+
+**TailwindCSS 4.1.10 设计系统**
+
+- **设计风格**: VS Code 风格专业界面
+- **主题**: 明暗主题支持 (light/dark)
+- **响应式**: 移动端适配预留
+- **组件库**: @headlessui/react 无样式组件 + lucide-react 图标
+
+### 业务服务架构
+
+**字幕解析服务 (SubtitleParserService)**
+
+- **支持格式**: SRT、ASS/SSA
+- **处理能力**: 正则表达式单词提取、词频统计、时间轴解析
+- **依赖**: subtitle@4.2.1 核心解析库
+
+**词典查询服务 (DictionaryService)**
+
+- **数据源**:
+  - Free Dictionary API (https://api.dictionaryapi.dev) - 主要数据源
+  - bing-translate-api@4.0.2 (中英翻译)
+- **特性**: 完全在线查询、10 秒超时控制、错误降级、标准化响应格式
+
+**数据持久化**
+
+- **用户数据**: electron-store@10.1.0 (已集成)
+- **配置存储**: JSON 格式本地文件
+- **学习记录**: 待实现增强功能
+
+### 核心系统架构
+
+**IPC 通信系统**
+
+- **模式**: electron 内置的 ipcMain/ipcRenderer
+- **特性**: invoke/handle 异步模式、contextBridge 安全 API 暴露
+- **类型安全**: 完整的 TypeScript 类型定义
+
+**文件系统处理**
+
+- **字幕解析**: subtitle@4.2.1 库 + 自定义单词提取
+- **支持格式**: SRT、ASS/SSA 格式完整支持
+- **处理能力**: 正则表达式清理、词频统计、时间轴保留
 
 ### 服务架构
 
 - **SubtitleParserService**: 字幕文件解析服务
-  - 多格式支持 (SRT, ASS)
-  - 单词提取和词频统计
-  - 错误处理和用户反馈
-- **DictionaryService**: 词典查询服务
-  - 本地 JSON 词典
-  - 在线 API 集成预留
-  - 缓存机制
+  - 多格式支持 (SRT, ASS/SSA)
+  - 智能单词提取和词频统计
+  - 完整的错误处理和用户反馈
+- **DictionaryService**: 在线词典查询服务
+  - Free Dictionary API 集成
+  - 必应翻译 API 支持
+  - 网络错误处理和超时控制
 
 ### 开发工具链
 
@@ -89,23 +111,30 @@ words-via-subtitle/
 ├── src/
 │   ├── main/                    # Electron 主进程
 │   │   ├── main.ts             # 应用入口点
+│   │   ├── menu.ts             # 应用菜单系统
 │   │   ├── preload.ts          # 预加载脚本
 │   │   ├── ipc-handlers.ts     # IPC 请求处理器
-│   │   └── services/           # 业务服务层
-│   │       ├── subtitleParser.ts    # 字幕解析服务
-│   │       └── dictionaryService.ts # 词典查询服务
+│   │   ├── initialize.ts       # 服务初始化
+│   │   ├── services/           # 业务服务层
+│   │   │   ├── subtitleParser.ts    # 字幕解析服务
+│   │   │   └── dictionaryService.ts # 在线词典查询服务
+│   │   └── utils/              # 主进程工具函数
 │   ├── renderer/               # Next.js 渲染进程
 │   │   ├── pages/              # 页面组件
-│   │   │   └── index.tsx       # 主页面
-│   │   ├── components/         # UI 组件 (预留)
-│   │   ├── hooks/              # 自定义 Hooks (预留)
-│   │   ├── styles/             # 样式文件 (预留)
+│   │   │   ├── app.tsx         # 主应用页面
+│   │   │   └── _document.tsx   # Next.js 文档配置
+│   │   ├── components/         # UI 组件库
+│   │   │   ├── TopBar.tsx      # 顶部工具栏
+│   │   │   ├── WordList.tsx    # 单词列表面板
+│   │   │   ├── WordDefinition.tsx # 释义显示面板
+│   │   │   └── UI.tsx          # 通用UI组件
+│   │   ├── hooks/              # 自定义 Hooks
+│   │   ├── styles/             # 样式文件
 │   │   └── types/              # 渲染进程类型定义
-│   │       └── renderer.d.ts   # electronAPI 类型声明
 │   └── shared/                 # 前后端共享代码
-│       ├── ipc.ts              # IPC 通道定义
+│       ├── ipc.ts              # IPC 通道定义和类型
 │       ├── types.ts            # 共享类型定义
-│       └── utils/              # 共享工具函数 (预留)
+│       └── utils/              # 共享工具函数
 ├── .memory-bank/               # AI 助手记忆库
 ├── config/                     # 构建配置
 ├── assets/                     # 静态资源
