@@ -100,86 +100,64 @@ export default function Home() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-700">字幕内容</h2>
-            <div className="h-96 overflow-y-auto pr-2">
-              {subtitleEntries.length > 0 ? (
-                <ul className="space-y-2">
-                  {subtitleEntries.map((entry) => (
-                    <li key={entry.id} className="p-3 bg-gray-100 rounded-md text-gray-800">
-                      <span className="font-mono text-sm text-gray-500 mr-4">
-                        {entry.startTime} --&gt; {entry.endTime}
-                      </span>
-                      <p className="inline">{entry.text}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500">请先选择一个字幕文件来查看内容。</p>
-              )}
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Subtitles and Words List Column */}
+          <div className="md:col-span-1 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-4 text-gray-700 border-b pb-2">单词列表</h2>
+            <ul className="space-y-2">
+              {words.map((word, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleWordClick(word.original)}
+                  className={`cursor-pointer p-3 rounded-md transition-all duration-200 ease-in-out ${
+                    selectedWord === word.original
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-gray-100 hover:bg-blue-100 hover:text-blue-600'
+                  }`}
+                >
+                  <span className="font-semibold">{word.original}</span>
+                  <span className="text-sm text-gray-500 ml-2">({word.count}次)</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-700">单词列表</h2>
-            <div className="h-96 overflow-y-auto pr-2">
-              {words.length > 0 ? (
-                <ul className="space-y-2">
-                  {words.map((word) => (
-                    <li
-                      key={word.original}
-                      className="p-3 bg-gray-100 rounded-md flex justify-between items-center hover:bg-blue-50 cursor-pointer transition-colors"
-                      onClick={() => handleWordClick(word.original)}
-                    >
-                      <span className="font-semibold text-gray-800">{word.original}</span>
-                      <span className="text-sm text-gray-500">({word.count}次)</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-500">这里将显示从字幕中提取的单词。</p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 单词释义显示区域 */}
-        {(selectedWord || wordDefinition || isLookingUp) && (
-          <div className="mt-8 bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-700">单词释义</h2>
+          {/* Word Definition Column */}
+          <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-4 text-gray-700 border-b pb-2">单词释义</h2>
             {isLookingUp ? (
-              <div className="text-center p-4">
-                <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">正在查询单词 "{selectedWord}"...</p>
-              </div>
+              <p className="text-center text-gray-500">正在查询...</p>
             ) : wordDefinition ? (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-gray-800">
-                  {wordDefinition.word}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-3xl font-bold text-gray-800">{wordDefinition.word}</h3>
                   {wordDefinition.phonetic && (
-                    <span className="ml-2 text-sm text-gray-500 font-normal">
-                      [{wordDefinition.phonetic}]
-                    </span>
+                    <p className="text-lg text-gray-500">{wordDefinition.phonetic}</p>
                   )}
-                </h3>
-                {wordDefinition.partOfSpeech && (
-                  <p className="text-sm text-blue-600 font-medium">{wordDefinition.partOfSpeech}</p>
-                )}
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2">释义:</h4>
-                  <p className="text-gray-800">{wordDefinition.definition}</p>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2">翻译:</h4>
-                  <p className="text-gray-800">{wordDefinition.translation}</p>
-                </div>
-                {wordDefinition.examples && wordDefinition.examples.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2">例句:</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                      {wordDefinition.examples.map((example, index) => (
-                        <li key={index} className="text-gray-700">
+
+                {wordDefinition.meanings.map((meaning, index) => (
+                  <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <h4 className="text-xl font-semibold text-blue-600 mb-3">
+                      {meaning.partOfSpeech}
+                    </h4>
+                    <ul className="space-y-4">
+                      {meaning.definitions.map((def, i) => (
+                        <li key={i} className="pl-4 border-l-4 border-blue-200">
+                          <p className="font-medium text-gray-800">{def.english}</p>
+                          <p className="text-green-700">{def.chinese}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+
+                {wordDefinition.examples.length > 0 && (
+                  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <h4 className="text-xl font-semibold text-gray-700 mb-3">例句</h4>
+                    <ul className="space-y-3 list-disc list-inside">
+                      {wordDefinition.examples.map((example, i) => (
+                        <li key={i} className="text-gray-800">
                           {example}
                         </li>
                       ))}
@@ -187,13 +165,11 @@ export default function Home() {
                   </div>
                 )}
               </div>
-            ) : selectedWord ? (
-              <div className="text-center p-4 text-gray-500">
-                未找到单词 "{selectedWord}" 的释义
-              </div>
-            ) : null}
+            ) : (
+              <p className="text-center text-gray-500">从左侧选择一个单词以查看其定义。</p>
+            )}
           </div>
-        )}
+        </div>
       </main>
     </>
   );

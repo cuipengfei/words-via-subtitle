@@ -6,6 +6,7 @@
       "dependencies": {
         "@headlessui/react": "^2.2.4",
         "@heroicons/react": "^2.2.0",
+        "bing-translate-api": "^4.0.2",
         "electron-is-dev": "^3.0.1",
         "electron-next": "^3.1.5",
         "electron-store": "^10.1.0",
@@ -654,6 +655,8 @@
     "big.js": ["big.js@5.2.2", "", {}, "sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ=="],
 
     "binary-extensions": ["binary-extensions@2.3.0", "", {}, "sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw=="],
+
+    "bing-translate-api": ["bing-translate-api@4.0.2", "", { "dependencies": { "got": "^11.8.6" } }, "sha512-JJ8XUehnxzOhHU91oy86xEtp8OOMjVEjCZJX042fKxoO19NNvxJ5omeCcxQNFoPbDqVpBJwqiGVquL0oPdQm1Q=="],
 
     "bl": ["bl@4.1.0", "", { "dependencies": { "buffer": "^5.5.0", "inherits": "^2.0.4", "readable-stream": "^3.4.0" } }, "sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w=="],
 

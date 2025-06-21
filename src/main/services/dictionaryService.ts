@@ -1,42 +1,10 @@
-import * as https from 'https';
-import { DictionaryEntry } from '@shared/types';
-
-// 定义从 https://dictionaryapi.dev/ 获取的数据结构
-interface DictionaryAPIPronunciation {
-  text?: string;
-  audio?: string;
-  sourceUrl?: string;
-  license?: {
-    name: string;
-    url: string;
-  };
-}
-
-interface DictionaryAPIDefinition {
-  definition: string;
-  synonyms: string[];
-  antonyms: string[];
-  example?: string;
-}
-
-interface DictionaryAPIMeaning {
-  partOfSpeech: string;
-  definitions: DictionaryAPIDefinition[];
-  synonyms: string[];
-  antonyms: string[];
-}
-
-interface DictionaryAPIResponse {
-  word: string;
-  phonetic?: string;
-  phonetics: DictionaryAPIPronunciation[];
-  meanings: DictionaryAPIMeaning[];
-  license: {
-    name: string;
-    url: string;
-  };
-  sourceUrls: string[];
-}
+import {
+  DictionaryEntry,
+  DictionaryAPIResponse,
+  MeaningBlock,
+  DefinitionInfo,
+} from '@shared/types';
+import { translate } from 'bing-translate-api';
 
 // 词典服务类
 export class DictionaryService {
@@ -102,7 +70,7 @@ export class DictionaryService {
       }
 
       // 转换API响应为内部格式
-      const result = this.convertApiResponseToDictionaryEntry(apiData);
+      const result = await this.convertApiResponseToDictionaryEntry(apiData);
       console.log(`转换后的词典条目:`, JSON.stringify(result, null, 2));
       return result;
     } catch (error) {
@@ -122,55 +90,84 @@ export class DictionaryService {
   /**
    * 将API响应转换为内部DictionaryEntry格式
    */
-  private convertApiResponseToDictionaryEntry(
+  private async convertApiResponseToDictionaryEntry(
     apiResponse: DictionaryAPIResponse[]
-  ): DictionaryEntry | null {
+  ): Promise<DictionaryEntry | null> {
     if (!apiResponse || apiResponse.length === 0) {
+      console.log('[DictionaryService] API response is empty or null.');
       return null;
     }
+    console.log('[DictionaryService] Received API response:', JSON.stringify(apiResponse, null, 2));
 
     const primaryEntry = apiResponse[0];
     const word = primaryEntry.word;
-
-    // 查找最佳音标文本（优先选择带音频的）
-    let phonetic = primaryEntry.phonetic;
-    if (!phonetic) {
-      const phoneticWithAudio = primaryEntry.phonetics.find((p) => p.audio);
-      phonetic = phoneticWithAudio?.text || primaryEntry.phonetics[0]?.text;
-    }
+    const phonetic = primaryEntry.phonetics.find((p) => p.text)?.text;
 
     const allExamples = new Set<string>();
-    const allPartsOfSpeech = new Set<string>();
-    const structuredTranslationLines: string[] = [];
+    const meaningBlocks: MeaningBlock[] = [];
 
-    // 聚合所有条目和释义的数据
-    apiResponse.forEach((entry) => {
-      entry.meanings.forEach((meaning) => {
-        allPartsOfSpeech.add(meaning.partOfSpeech);
+    for (const entry of apiResponse) {
+      for (const meaning of entry.meanings) {
+        const definitionsToTranslate: string[] = meaning.definitions.map((def) => def.definition);
 
-        structuredTranslationLines.push(`[${meaning.partOfSpeech}]`);
-
-        meaning.definitions.forEach((def, index) => {
-          structuredTranslationLines.push(`${index + 1}. ${def.definition}`);
+        meaning.definitions.forEach((def) => {
           if (def.example) {
             allExamples.add(def.example);
           }
         });
-        structuredTranslationLines.push(''); // 为不同词性之间添加空行
-      });
-    });
 
-    // 对于主'definition'，提供第一个最常见的释义
-    const firstDefinition =
-      primaryEntry.meanings[0]?.definitions[0]?.definition || 'No definition found.';
+        console.log(
+          `[DictionaryService] Text to translate for part of speech "${
+            meaning.partOfSpeech
+          }":\n${definitionsToTranslate.join('\n')}`
+        );
 
-    return {
+        try {
+          const res = await translate(definitionsToTranslate.join('\n'), 'en', 'zh-Hans');
+          console.log(
+            `[DictionaryService] Translation successful for "${meaning.partOfSpeech}". Raw response:`,
+            JSON.stringify(res, null, 2)
+          );
+
+          const translatedDefinitions = res?.translation?.split('\n') || [];
+
+          const definitionInfos: DefinitionInfo[] = definitionsToTranslate.map((englishDef, i) => ({
+            english: englishDef,
+            chinese: translatedDefinitions[i] || '翻译不可用',
+          }));
+
+          meaningBlocks.push({
+            partOfSpeech: meaning.partOfSpeech,
+            definitions: definitionInfos,
+          });
+        } catch (err) {
+          console.error(
+            `[DictionaryService] Translation failed for "${meaning.partOfSpeech}"`,
+            err
+          );
+          meaningBlocks.push({
+            partOfSpeech: meaning.partOfSpeech,
+            definitions: definitionsToTranslate.map((englishDef) => ({
+              english: englishDef,
+              chinese: '翻译失败',
+            })),
+          });
+        }
+      }
+    }
+
+    const finalEntry: DictionaryEntry = {
       word,
       phonetic: phonetic || undefined,
-      definition: firstDefinition,
-      translation: structuredTranslationLines.join('\n').trim(),
-      examples: Array.from(allExamples).slice(0, 5), // 获取独特的例子并限制为5个
-      partOfSpeech: Array.from(allPartsOfSpeech).join(', '),
+      meanings: meaningBlocks,
+      examples: Array.from(allExamples).slice(0, 5),
     };
+
+    console.log(
+      '[DictionaryService] Final dictionary entry constructed:',
+      JSON.stringify(finalEntry, null, 2)
+    );
+
+    return finalEntry;
   }
 }
