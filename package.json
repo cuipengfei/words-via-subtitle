@@ -74,6 +74,7 @@
     "next": "^15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-resizable-panels": "^3.0.3",
     "subtitle": "^4.2.1"
   },
   "packageManager": "bun@1.2.16"
