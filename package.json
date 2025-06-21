@@ -1,0 +1,63 @@
+{
+  "name": "words-via-subtitle",
+  "version": "1.0.0",
+  "description": "Modern implementation of a subtitle-based English vocabulary learning application",
+  "main": "./dist/main/main.js",
+  "scripts": {
+    "dev": "bun scripts/dev.js",
+    "dev:electron": "cross-env NODE_ENV=development electron .",
+    "dev:next": "next dev src/renderer",
+    "build": "bun run build:electron && bun run build:next",
+    "build:electron": "webpack --config config/webpack.config.js",
+    "build:next": "next build src/renderer && next export src/renderer -o dist/renderer",
+    "start": "cross-env NODE_ENV=production electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --config electron-builder.js",
+    "postinstall": "electron-builder install-app-deps",
+    "lint": "eslint --ext .ts,.tsx .",
+    "test": "jest"
+  },
+  "keywords": [
+    "electron",
+    "nextjs",
+    "typescript",
+    "subtitle",
+    "language-learning",
+    "vocabulary"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.5.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.29.0",
+    "eslint-config-next": "^15.3.4",
+    "eslint-plugin-react": "^7.37.5",
+    "jest": "^30.0.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.10",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
+    "electron-is-dev": "^3.0.1",
+    "electron-next": "^3.1.5",
+    "electron-store": "^10.1.0",
+    "next": "^15.3.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "subtitle": "^4.2.1"
+  }
+}
