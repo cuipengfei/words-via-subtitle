@@ -6,22 +6,8 @@ export default function Home() {
   const [videoPath, setVideoPath] = useState<string | null>(null);
 
   useEffect(() => {
-    // 监听字幕文件打开事件
-    const unsubscribeSubtitle = window.electronAPI.openSubtitleFile((filePath) => {
-      // 这里将添加字幕解析和处理逻辑
-      setSubtitle(filePath);
-    });
-
-    // 监听视频文件打开事件
-    const unsubscribeVideo = window.electronAPI.openVideoFile((filePath) => {
-      setVideoPath(filePath);
-    });
-
-    // 组件卸载时清理监听器
-    return () => {
-      unsubscribeSubtitle();
-      unsubscribeVideo();
-    };
+    // 暂时移除事件监听，稍后实现
+    console.log('页面已加载，等待实现文件打开功能');
   }, []);
 
   return (

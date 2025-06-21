@@ -1,11 +1,11 @@
-interface ElectronAPI {
-  openSubtitleFile: (callback: (filePath: string) => void) => () => void;
-  openVideoFile: (callback: (filePath: string) => void) => () => void;
-}
+import { ElectronAPI } from '../../shared/ipc';
 
 declare global {
   interface Window {
-    electronAPI: ElectronAPI;
+    electron: ElectronAPI;
+    appInfo: {
+      version: string;
+    };
   }
 }
 

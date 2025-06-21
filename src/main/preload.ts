@@ -1,5 +1,37 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { ElectronAPI, IpcChannels } from '@/shared/ipc';
+
+// 临时内联 IPC 通道定义，避免模块导入问题
+const IpcChannels = {
+  PARSE_SUBTITLE_FILE: 'parse-subtitle-file',
+  GET_SUBTITLES: 'get-subtitles',
+  TRANSLATE_WORD: 'translate-word',
+  GET_WORD_DEFINITION: 'get-word-definition',
+  SAVE_LEARNED_WORD: 'save-learned-word',
+  GET_LEARNED_WORDS: 'get-learned-words',
+  UPDATE_WORD_STATUS: 'update-word-status',
+  OPEN_VIDEO_FILE: 'open-video-file',
+  OPEN_SUBTITLE_FILE: 'open-subtitle-file',
+  SAVE_CONFIG: 'save-config',
+  GET_SETTINGS: 'get-settings',
+  UPDATE_SETTINGS: 'update-settings',
+};
+
+// 临时内联类型定义
+interface ElectronAPI {
+  parseSubtitleFile: (filePath: string) => Promise<any>;
+  getSubtitles: () => Promise<any>;
+  translateWord: (word: string) => Promise<any>;
+  getWordDefinition: (word: string) => Promise<any>;
+  saveLearnedWord: (word: any) => Promise<void>;
+  getLearnedWords: () => Promise<any>;
+  updateWordStatus: (word: string, status: any) => Promise<void>;
+  openVideoFile: () => Promise<string>;
+  openSubtitleFile: () => Promise<string>;
+  saveConfig: (data: any) => Promise<void>;
+  getSettings: () => Promise<any>;
+  updateSettings: (settings: any) => Promise<void>;
+  isDevMode: () => boolean;
+}
 
 /**
  * 预加载脚本

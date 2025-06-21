@@ -35,10 +35,12 @@ async function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: join(__dirname, 'preload.js'),
+      preload: isDev
+        ? join(__dirname, '../../dist/main/preload.js')
+        : join(__dirname, 'preload.js'),
     },
-    // 添加应用图标
-    icon: join(app.getAppPath(), 'assets', 'icons', 'icon.png'),
+    // 暂时移除图标，稍后添加
+    // icon: join(app.getAppPath(), 'assets', 'icons', 'icon.png'),
   });
 
   // 创建应用菜单
