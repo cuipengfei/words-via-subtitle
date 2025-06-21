@@ -27,10 +27,13 @@ export function WordList({
           <List size={20} className="text-indigo-600" />
           单词列表
         </h2>
-        
+
         {/* 搜索框 */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
+            size={16}
+          />
           <input
             type="text"
             placeholder="搜索单词..."
@@ -40,7 +43,7 @@ export function WordList({
           />
         </div>
       </div>
-      
+
       {/* 列表内容区域 - 独立滚动 */}
       <div className="flex-1 overflow-y-auto">
         {filteredWords.length === 0 ? (
@@ -60,17 +63,16 @@ export function WordList({
                   : 'border-l-4 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:border-l-gray-300 dark:hover:border-l-gray-600'
               }`}
             >
-              <span className={`font-semibold transition-colors ${
-                selectedWord === word.original 
-                  ? 'text-indigo-900 dark:text-indigo-100' 
-                  : 'text-gray-900 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'
-              }`}>
+              <span
+                className={`font-semibold transition-colors ${
+                  selectedWord === word.original
+                    ? 'text-indigo-900 dark:text-indigo-100'
+                    : 'text-gray-900 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300'
+                }`}
+              >
                 {word.original}
               </span>
-              <Badge 
-                variant={selectedWord === word.original ? 'primary' : 'default'}
-                size="sm"
-              >
+              <Badge variant={selectedWord === word.original ? 'primary' : 'default'} size="sm">
                 {word.count}次
               </Badge>
             </div>

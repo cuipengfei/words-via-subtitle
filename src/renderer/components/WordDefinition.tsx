@@ -25,14 +25,16 @@ const EmptyState = ({
   icon: Icon,
   title,
   subtitle,
-  className = "",
+  className = '',
 }: {
   icon: any;
   title: string;
   subtitle: string;
   className?: string;
 }) => (
-  <div className={`flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400 p-8 ${className}`}>
+  <div
+    className={`flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400 p-8 ${className}`}
+  >
     <Icon size={64} className="mb-4 text-slate-300 dark:text-slate-600" />
     <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
     <p className="text-center text-sm max-w-sm leading-relaxed">{subtitle}</p>
@@ -108,13 +110,15 @@ export function WordDefinition({
           单词释义
         </h2>
       </div>
-      
+
       {/* 释义内容区域 - 独立滚动 */}
       <div className="flex-1 overflow-y-auto p-6">
         {/* 单词标题区 */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-4xl font-bold text-gray-900 dark:text-gray-100">{definition.word}</h3>
+            <h3 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+              {definition.word}
+            </h3>
             {definition.wordHeadTranslation && (
               <span className="text-2xl font-medium text-indigo-600 dark:text-indigo-400">
                 {definition.wordHeadTranslation}
@@ -135,7 +139,10 @@ export function WordDefinition({
 
         {/* 词性定义块 */}
         {definition.meanings.map((meaning, index) => (
-          <div key={index} className="mb-8 border-l-4 border-indigo-500 bg-gray-50 dark:bg-gray-800/50 rounded-r-lg">
+          <div
+            key={index}
+            className="mb-8 border-l-4 border-indigo-500 bg-gray-50 dark:bg-gray-800/50 rounded-r-lg"
+          >
             <div className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <span className="font-semibold text-lg text-gray-900 dark:text-gray-100">
@@ -145,7 +152,7 @@ export function WordDefinition({
                   {meaning.chinesePartOfSpeech}
                 </span>
               </div>
-              
+
               <ul className="space-y-3">
                 {meaning.definitions.map((def, i) => (
                   <li key={i} className="space-y-1">
@@ -172,7 +179,10 @@ export function WordDefinition({
             </h4>
             <div className="space-y-4">
               {definition.examples.map((example, i) => (
-                <div key={i} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div
+                  key={i}
+                  className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800"
+                >
                   <p className="text-gray-900 dark:text-gray-100 leading-relaxed mb-2">
                     • {example.english}
                   </p>
