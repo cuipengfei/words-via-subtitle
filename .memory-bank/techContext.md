@@ -3,7 +3,7 @@
 ## 开发环境
 
 - **Node.js**: v18.x 或更高版本
-- **包管理器**: npm 或 yarn
+- **包管理器**: Bun v1.2.16
 - **开发 IDE**: VS Code (推荐)
 
 ## 技术栈详情
@@ -29,9 +29,9 @@
 
 ### 开发工具
 
-- **ESLint**: v8.38.0 - 代码质量工具
-- **Jest**: v29.5.0 - 测试框架
-- **Concurrently**: v8.0.1 - 并行执行命令
+- **ESLint**: v9.29.0 - 代码质量工具
+- **Jest**: v30.0.2 - 测试框架
+- **Concurrently**: v9.1.2 - 并行执行命令
 - **Cross-env**: v7.0.3 - 跨平台环境变量
 
 ## 项目结构
@@ -56,7 +56,7 @@ words-via-subtitle/
 │       ├── constants/    # 常量
 │       ├── types/        # 类型定义
 │       └── utils/        # 共享工具函数
-├── .eslintrc.js          # ESLint配置
+├── eslint.config.js      # ESLint v9 扁平配置
 ├── electron-tsconfig.json # Electron TypeScript配置
 ├── package.json          # 项目依赖配置
 ├── tailwind.config.js    # Tailwind配置
@@ -65,10 +65,10 @@ words-via-subtitle/
 
 ## 构建与开发脚本
 
-- **开发模式**: `npm run dev` - 并行启动 Electron 和 Next.js 开发服务器
-- **构建**: `npm run build` - 构建生产版本
-- **代码检查**: `npm run lint` - 运行 ESLint 代码检查
-- **测试**: `npm run test` - 运行 Jest 测试
+- **开发模式**: `bun run dev` - 并行启动 Electron 和 Next.js 开发服务器
+- **构建**: `bun run build` - 构建生产版本
+- **代码检查**: `bun run lint` - 运行 ESLint v9 代码检查
+- **测试**: `bun run test` - 运行 Jest 测试
 
 ## 外部依赖
 
