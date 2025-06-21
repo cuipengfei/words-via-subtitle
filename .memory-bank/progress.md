@@ -301,3 +301,73 @@
 2. 添加更多学习功能（复习、统计等）
 3. 性能优化和用户体验改进
 4. 跨平台测试和打包发布
+
+## 🔧 最新修复 (2025-06-21 21:17)
+
+### ✅ 构建问题修复
+
+1. **类型错误修复**
+
+   - 修复 SubtitleEntry 接口：startTime 和 endTime 从 string 改为 number (毫秒)
+   - 更新 subtitleParser.ts 中的时间转换逻辑
+   - 修复 SubtitleOverlay.tsx 中的类型错误
+   - 构建现在完全成功 ✅
+
+2. **滚动功能优化**
+
+   - 移除移动端代码，专注桌面端体验
+   - 创建 ScrollContainer 组件用于独立滚动
+   - 为 WordList 和 WordDefinition 添加测试内容验证滚动
+   - 优化布局结构确保各面板独立滚动
+
+3. **UI 改进**
+   - 移除重复的 EmptyState 组件
+   - 简化 ScrollContainer 实现
+   - 添加测试数据验证滚动功能
+
+### 🔍 当前状态
+
+- **构建**: ✅ 完全成功
+- **应用运行**: ✅ 正常
+- **滚动测试**: 🔄 等待用户验证
+- **热重载**: ✅ 正常工作
+
+### 📋 下一步
+
+1. 用户验证滚动功能是否正常
+2. 移除测试内容，恢复正常 UI
+3. 继续功能扩展开发
+
+## 🚨 关键问题待解决 (2025-06-21 21:40)
+
+### ❌ 滚动问题仍未解决
+
+**问题描述**：
+
+- 整个应用仍然一起滚动，而不是各部分独立滚动
+- 用户期望：左栏（单词列表）和右栏（单词释义）应该独立滚动
+- 当前状态：无论鼠标在哪里，整个应用都会一起滚动
+
+**已尝试的方法**：
+
+1. ❌ 全局 CSS 修改 (html/body overflow 设置)
+2. ❌ ScrollContainer 组件创建
+3. ❌ flex 布局优化 (flex-1, min-h-0)
+4. ❌ overflow-hidden/overflow-y-auto 组合
+5. ❌ 面板容器 overflow 设置
+6. ❌ 使用内联样式 height: 0 强制收缩
+7. ❌ flex-none + flex-1 布局组合
+
+**技术细节**：
+
+- 主应用：`h-screen overflow-hidden`
+- 内容区域：`h-[calc(100vh-50px)] overflow-hidden`
+- 面板：`h-full flex flex-col`
+- 滚动区域：`flex-1 overflow-y-auto style={{height: 0}}`
+
+**下一步计划**：
+
+- 需要全新的方法，可能需要重新设计布局结构
+- 考虑使用 CSS Grid 替代复杂的 flex 嵌套
+- 或者使用第三方滚动库如 react-perfect-scrollbar
+- 需要深入分析 react-resizable-panels 与滚动的兼容性

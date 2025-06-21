@@ -1,7 +1,7 @@
 export interface SubtitleEntry {
   id: number;
-  startTime: string;
-  endTime: string;
+  startTime: number; // 毫秒
+  endTime: number; // 毫秒
   text: string;
 }
 

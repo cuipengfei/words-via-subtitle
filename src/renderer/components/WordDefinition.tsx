@@ -1,5 +1,5 @@
 import { BookOpenText, MessageCircleQuestion, Volume2, Heart, Check, X } from 'lucide-react';
-import { ScrollContainer } from './ScrollContainer';
+
 import type { DictionaryEntry } from '@shared/types';
 
 const DefinitionSkeleton = () => (
@@ -19,26 +19,6 @@ const DefinitionSkeleton = () => (
       <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded-md w-1/4"></div>
       <div className="h-10 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
     </div>
-  </div>
-);
-
-const EmptyState = ({
-  icon: Icon,
-  title,
-  subtitle,
-  className = '',
-}: {
-  icon: any;
-  title: string;
-  subtitle: string;
-  className?: string;
-}) => (
-  <div
-    className={`flex flex-col items-center justify-center h-full text-slate-500 dark:text-slate-400 p-8 ${className}`}
-  >
-    <Icon size={64} className="mb-4 text-slate-300 dark:text-slate-600" />
-    <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
-    <p className="text-center text-sm max-w-sm leading-relaxed">{subtitle}</p>
   </div>
 );
 
@@ -84,6 +64,20 @@ export function WordDefinition({
           <p className="text-center text-sm max-w-sm leading-relaxed mb-6">
             从左侧列表中选择一个单词，或点击视频字幕中的单词，查看详细的释义和用法示例。
           </p>
+
+          {/* 添加测试内容来验证滚动 */}
+          <div className="w-full space-y-4">
+            {Array.from({ length: 20 }, (_, i) => (
+              <div key={i} className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <h4 className="font-semibold mb-2">测试内容 {i + 1}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  这是一些测试内容，用来验证滚动功能是否正常工作。每个块都包含足够的文本来测试垂直滚动。
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                  incididunt ut labore et dolore magna aliqua.
+                </p>
+              </div>
+            ))}
+          </div>
           <div className="flex items-center gap-4 text-xs text-gray-400">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -112,20 +106,25 @@ export function WordDefinition({
             单词释义
           </h2>
         </div>
-        <EmptyState
-          icon={MessageCircleQuestion}
-          title="释义查询失败"
-          subtitle={`抱歉，无法获取单词 "${selectedWord}" 的释义信息。请检查网络连接后重试。`}
-          className="text-orange-500 dark:text-orange-400"
-        />
+        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <MessageCircleQuestion size={24} className="text-white" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+            释义查询失败
+          </h3>
+          <p className="text-center text-sm leading-relaxed">
+            抱歉，无法获取单词 "{selectedWord}" 的释义信息。请检查网络连接后重试。
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
-      {/* 面板头部 */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      {/* 面板头部 - 固定不滚动 */}
+      <div className="flex-none p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
           <BookOpenText size={20} className="text-indigo-600" />
           单词释义
@@ -133,7 +132,7 @@ export function WordDefinition({
       </div>
 
       {/* 释义内容区域 - 独立滚动 */}
-      <ScrollContainer className="flex-1 p-6">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6" style={{ height: 0 }}>
         {/* 单词标题区 */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
@@ -232,7 +231,7 @@ export function WordDefinition({
             </div>
           </div>
         )}
-      </ScrollContainer>
+      </div>
     </div>
   );
 }

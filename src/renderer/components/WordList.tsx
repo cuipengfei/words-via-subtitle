@@ -2,7 +2,6 @@ import { Search, List, Clock } from 'lucide-react';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import type { Word } from '@shared/types';
 import { Badge } from './UI';
-import { ScrollContainer } from './ScrollContainer';
 
 export interface WordListRef {
   focusSearch: () => void;
@@ -42,9 +41,9 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
     };
 
     return (
-      <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800">
-        {/* 面板头部 */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div className="h-full bg-gray-50 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+        {/* 面板头部 - 固定不滚动 */}
+        <div className="flex-none p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <List size={20} className="text-indigo-600" />
@@ -73,16 +72,25 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
         </div>
 
         {/* 列表内容区域 - 独立滚动 */}
-        <ScrollContainer className="flex-1">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ height: 0 }}>
           {filteredAndSortedWords.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400 p-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
-                <Search size={24} className="text-white" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-                未找到匹配的单词
-              </h3>
-              <p className="text-center text-sm leading-relaxed">尝试调整搜索关键词或检查拼写</p>
+            <div className="space-y-2 p-2">
+              {/* 添加测试数据来验证滚动 */}
+              {Array.from({ length: 50 }, (_, i) => (
+                <div
+                  key={`test-${i}`}
+                  className="group border-l-4 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:border-l-gray-300 dark:hover:border-l-gray-600 transition-all duration-150"
+                >
+                  <div className="flex justify-between items-center px-4 py-3 cursor-pointer">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+                      test-word-{i + 1}
+                    </span>
+                    <Badge variant="default" size="sm">
+                      {Math.floor(Math.random() * 20) + 1}次
+                    </Badge>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             filteredAndSortedWords.map((word) => (
@@ -142,7 +150,7 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
               </div>
             ))
           )}
-        </ScrollContainer>
+        </div>
       </div>
     );
   }

@@ -143,20 +143,20 @@ export default function AppPage() {
       <Head>
         <title>字幕学单词</title>
       </Head>
-      <div className="flex flex-col h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans overflow-hidden min-w-[1000px]">
+      <div className="h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans min-w-[1000px] overflow-hidden">
         <TopBar
           selectedFileName={selectedFileName}
           videoFileName={videoFileName}
           onOpenFile={handleFileSelect}
           onOpenVideo={handleVideoSelect}
         />
-        <div className="flex-1 overflow-hidden">
+        <div className="h-[calc(100vh-50px)] overflow-hidden">
           {/* 三栏布局 */}
           <div className="h-full">
             <PanelGroup direction="horizontal">
               {/* 左栏：单词列表 */}
               <Panel defaultSize={25} minSize={20} maxSize={40}>
-                <div className="animate-slide-in-left h-full overflow-hidden">
+                <div className="animate-slide-in-left h-full">
                   {words.length > 0 ? (
                     <WordList
                       ref={wordListRef}
@@ -216,7 +216,7 @@ export default function AppPage() {
 
               {/* 右栏：单词释义 */}
               <Panel defaultSize={25} minSize={20} maxSize={40}>
-                <div className="animate-slide-in-right h-full overflow-hidden">
+                <div className="animate-slide-in-right h-full">
                   <WordDefinition
                     definition={wordDefinition}
                     isLoading={isLookingUp}

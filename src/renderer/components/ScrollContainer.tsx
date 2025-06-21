@@ -11,10 +11,11 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
     return (
       <div
         ref={ref}
-        className={`overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 ${className}`}
+        className={`overflow-y-auto overflow-x-hidden h-full ${className}`}
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: 'rgb(156 163 175) transparent',
+          maxHeight: '100%',
           ...style,
         }}
       >

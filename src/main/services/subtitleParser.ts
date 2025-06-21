@@ -13,15 +13,6 @@ function tokenize(text: string): string[] {
   ); // Match words with apostrophes
 }
 
-// Time string to seconds
-function timeToSeconds(time: string): number {
-  const parts = time.split(',')[0].split(':').map(Number);
-  if (parts.length === 3) {
-    return parts[0] * 3600 + parts[1] * 60 + parts[2];
-  }
-  return 0;
-}
-
 /**
  * 字幕解析服务类
  * 负责解析SRT和ASS格式字幕文件，并提取单词
@@ -98,8 +89,8 @@ export class SubtitleParserService {
 
       entries.push({
         id,
-        startTime,
-        endTime,
+        startTime: this.timeStringToMs(startTime),
+        endTime: this.timeStringToMs(endTime),
         text: textLines.join(' '),
       });
 
@@ -127,8 +118,8 @@ export class SubtitleParserService {
         const text = parts.slice(9).join(',');
         entries.push({
           id: i + 1,
-          startTime,
-          endTime,
+          startTime: this.timeStringToMs(startTime),
+          endTime: this.timeStringToMs(endTime),
           text: text.replace(/\{.*?\}/g, ''), // 移除 ASS 特效标签
         });
       }
@@ -149,9 +140,9 @@ export class SubtitleParserService {
       for (const token of tokens) {
         const existing = wordMap.get(token) || { count: 0, occurrences: [] };
 
-        // 将时间字符串转换为毫秒
-        const startTimeMs = this.timeStringToMs(entry.startTime);
-        const endTimeMs = this.timeStringToMs(entry.endTime);
+        // 时间已经是毫秒格式
+        const startTimeMs = entry.startTime;
+        const endTimeMs = entry.endTime;
 
         existing.count += 1;
         existing.occurrences.push({
