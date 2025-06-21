@@ -33,12 +33,7 @@ export async function initializeServices(): Promise<void> {
     console.log('学习记录服务已初始化');
 
     // 注册IPC处理器
-    registerIpcHandlers(
-      subtitleParserService,
-      dictionaryService,
-      learningRecordService,
-      settingsService
-    );
+    registerIpcHandlers();
     console.log('IPC处理器已注册');
 
     // 设置应用程序事件处理器
@@ -61,9 +56,9 @@ function setupApplicationEvents(): void {
     // 在这里执行必要的清理工作
   });
 
-  // 处理系统休眠事件
-  app.on('suspend', () => {
-    console.log('系统即将休眠，保存应用状态...');
-    // 保存应用状态
-  });
+  // 处理系统休眠事件 (使用 powerMonitor 替代)
+  // powerMonitor.on('suspend', () => {
+  //   console.log('系统即将休眠，保存应用状态...');
+  //   // 保存应用状态
+  // });
 }

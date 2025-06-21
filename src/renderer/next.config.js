@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  output: 'export',
+  trailingSlash: true,
   // 配置Next.js处理Electron集成
   webpack: (config, { isServer }) => {
     // 在Next.js中导入Electron模块时避免错误

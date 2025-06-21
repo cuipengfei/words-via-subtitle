@@ -1,7 +1,7 @@
 import { IpcMainInvokeEvent } from 'electron';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as subtitle from 'subtitle';
+
 import { Subtitle, SubtitleParseResult, WordTimeMapping } from '@/shared/ipc';
 
 /**
@@ -154,16 +154,30 @@ export class SubtitleParserService {
   private async parseSrtContent(
     content: string
   ): Promise<{ subtitles: Subtitle[]; words: WordTimeMapping[] }> {
-    // 使用subtitle库解析SRT内容
-    const parsed = subtitle.parse(content);
+    // 使用简单的SRT解析逻辑
+    const subtitles: Subtitle[] = [];
+    const blocks = content.trim().split(/\n\s*\n/);
 
-    // 转换为统一的Subtitle格式
-    const subtitles: Subtitle[] = parsed.map((item: any, index: number) => ({
-      id: index + 1,
-      startTime: item.start,
-      endTime: item.end,
-      text: item.text,
-    }));
+    for (let i = 0; i < blocks.length; i++) {
+      const lines = blocks[i].split('\n');
+      if (lines.length >= 3) {
+        const id = parseInt(lines[0].trim());
+        const timeMatch = lines[1].match(/(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})/);
+
+        if (timeMatch) {
+          const startTime = this.parseTimeToMs(timeMatch[1]);
+          const endTime = this.parseTimeToMs(timeMatch[2]);
+          const text = lines.slice(2).join('\n').trim();
+
+          subtitles.push({
+            id: id || i + 1,
+            startTime,
+            endTime,
+            text,
+          });
+        }
+      }
+    }
 
     // 提取单词
     const words = await this.extractWordsFromSubtitles(subtitles);
@@ -241,6 +255,17 @@ export class SubtitleParserService {
     const words = await this.extractWordsFromSubtitles(subtitles);
 
     return { subtitles, words };
+  }
+
+  /**
+   * 将SRT格式的时间转换为毫秒
+   * @param timeStr 时间字符串，格式如 00:00:00,000
+   * @returns 毫秒时间戳
+   */
+  private parseTimeToMs(timeStr: string): number {
+    const [time, ms] = timeStr.split(',');
+    const [h, m, s] = time.split(':').map(Number);
+    return (h * 3600 + m * 60 + s) * 1000 + parseInt(ms);
   }
 
   /**

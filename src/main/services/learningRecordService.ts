@@ -24,7 +24,13 @@ interface LearningRecordSchema {
 
 // 学习记录服务
 export class LearningRecordService {
-  private store: Store<LearningRecordSchema>;
+  private store: Store<LearningRecordSchema> & {
+    get<K extends keyof LearningRecordSchema>(
+      key: K,
+      defaultValue?: LearningRecordSchema[K]
+    ): LearningRecordSchema[K];
+    set<K extends keyof LearningRecordSchema>(key: K, value: LearningRecordSchema[K]): void;
+  };
   private currentSession: {
     subtitle: string | null;
     startTime: Date | null;
@@ -40,7 +46,7 @@ export class LearningRecordService {
         misspelledWords: [],
         learningHistory: [],
       },
-    });
+    }) as any;
 
     // 初始化当前学习会话
     this.currentSession = {

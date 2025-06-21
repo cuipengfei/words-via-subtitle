@@ -1,3 +1,5 @@
+import { SubtitleParseResult, TranslationResult, AppSettings } from '@/shared/ipc';
+
 // 定义ElectronAPI接口
 interface ElectronAPI {
   // 文件操作
@@ -13,14 +15,14 @@ interface ElectronAPI {
   exportKnownWords: (callback: () => void) => () => void;
 
   // 字幕解析与处理
-  parseSubtitleFile: (filePath: string) => Promise<any>; // 返回类型将根据实际解析结果进行更精确定义
+  parseSubtitleFile: (filePath: string) => Promise<SubtitleParseResult>;
 
   // 词典查询
-  lookupWord: (word: string) => Promise<any>; // 返回类型将根据词典API响应进行更精确定义
+  lookupWord: (word: string) => Promise<TranslationResult>;
 
   // 配置管理
-  getConfig: (key: string) => Promise<any>;
-  setConfig: (key: string, value: any) => Promise<void>;
+  getConfig: <T = unknown>(key: string) => Promise<T>;
+  setConfig: (key: string, value: unknown) => Promise<void>;
 }
 
 // 定义应用信息接口

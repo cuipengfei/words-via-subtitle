@@ -8,14 +8,12 @@ export default function Home() {
   useEffect(() => {
     // 监听字幕文件打开事件
     const unsubscribeSubtitle = window.electronAPI.openSubtitleFile((filePath) => {
-      console.log('打开字幕文件:', filePath);
       // 这里将添加字幕解析和处理逻辑
       setSubtitle(filePath);
     });
 
     // 监听视频文件打开事件
     const unsubscribeVideo = window.electronAPI.openVideoFile((filePath) => {
-      console.log('打开视频文件:', filePath);
       setVideoPath(filePath);
     });
 
@@ -41,7 +39,7 @@ export default function Home() {
           {!subtitle && !videoPath && (
             <div className="text-center p-8">
               <p className="mb-4">欢迎使用字幕学单词！</p>
-              <p>使用菜单栏中的"文件 &gt; 打开字幕文件"开始学习</p>
+              <p>使用菜单栏中的&quot;文件 &gt; 打开字幕文件&quot;开始学习</p>
             </div>
           )}
 
