@@ -5,6 +5,7 @@ import isDev from 'electron-is-dev';
 import { registerIpcHandlers } from './ipc-handlers';
 import { SubtitleParserService } from './services/subtitleParser';
 import { DictionaryService } from './services/dictionaryService';
+import { createMenu } from './menu';
 
 // 全局保存对主窗口的引用
 let mainWindow: BrowserWindow | null = null;
@@ -68,6 +69,9 @@ async function createWindow() {
       });
 
   mainWindow.loadURL(loadURL);
+
+  // 创建应用菜单
+  createMenu(mainWindow);
 
   // 在开发环境打开开发者工具
   if (isDev) {

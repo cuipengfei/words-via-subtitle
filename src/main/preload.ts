@@ -76,7 +76,7 @@ const electronAPI: ElectronAPI = {
 };
 
 // 将API安全地暴露给渲染进程
-contextBridge.exposeInMainWorld('electron', electronAPI);
+contextBridge.exposeInMainWorld('electronAPI', electronAPI);
 
 // 向渲染进程暴露版本信息
 contextBridge.exposeInMainWorld('appInfo', {

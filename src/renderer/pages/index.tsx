@@ -30,10 +30,14 @@ export default function Home() {
         const result = await window.electronAPI.parseSubtitleFile(filePath);
 
         // 3. 处理解析结果
+        console.log('收到解析结果:', result);
         if (result.success && result.data) {
+          console.log('设置字幕条目:', result.data.entries.length);
+          console.log('设置单词列表:', result.data.words.length);
           setSubtitleEntries(result.data.entries);
           setWords(result.data.words);
         } else {
+          console.error('解析失败:', result.error);
           setError(result.error || '未知解析错误');
         }
       }
