@@ -130,17 +130,27 @@ export default function Home() {
             ) : wordDefinition ? (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-3xl font-bold text-gray-800">{wordDefinition.word}</h3>
+                  <h3 className="text-3xl font-bold text-gray-800">
+                    {wordDefinition.word}
+                    {wordDefinition.wordHeadTranslation && (
+                      <span className="text-xl text-green-800 font-semibold ml-4">
+                        {wordDefinition.wordHeadTranslation}
+                      </span>
+                    )}
+                  </h3>
                   {wordDefinition.phonetic && (
-                    <p className="text-lg text-gray-500">{wordDefinition.phonetic}</p>
+                    <p className="text-lg text-gray-500 mt-1">{wordDefinition.phonetic}</p>
                   )}
                 </div>
 
                 {wordDefinition.meanings.map((meaning, index) => (
                   <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                    <h4 className="text-xl font-semibold text-blue-600 mb-3">
+                    <h4 className="text-xl font-semibold text-blue-600 mb-1">
                       {meaning.partOfSpeech}
                     </h4>
+                    <p className="text-md font-medium text-blue-500 mb-3">
+                      {meaning.chinesePartOfSpeech}
+                    </p>
                     <ul className="space-y-4">
                       {meaning.definitions.map((def, i) => (
                         <li key={i} className="pl-4 border-l-4 border-blue-200">
@@ -155,10 +165,11 @@ export default function Home() {
                 {wordDefinition.examples.length > 0 && (
                   <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
                     <h4 className="text-xl font-semibold text-gray-700 mb-3">例句</h4>
-                    <ul className="space-y-3 list-disc list-inside">
+                    <ul className="space-y-4">
                       {wordDefinition.examples.map((example, i) => (
-                        <li key={i} className="text-gray-800">
-                          {example}
+                        <li key={i} className="pl-4 border-l-4 border-gray-200">
+                          <p className="font-medium text-gray-800">{example.english}</p>
+                          <p className="text-green-700">{example.chinese}</p>
                         </li>
                       ))}
                     </ul>

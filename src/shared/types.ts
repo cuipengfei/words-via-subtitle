@@ -44,14 +44,21 @@ export interface DefinitionInfo {
 
 export interface MeaningBlock {
   partOfSpeech: string;
+  chinesePartOfSpeech: string;
   definitions: DefinitionInfo[];
+}
+
+export interface ExampleInfo {
+  english: string;
+  chinese: string;
 }
 
 export interface DictionaryEntry {
   word: string;
+  wordHeadTranslation?: string;
   phonetic?: string;
   meanings: MeaningBlock[];
-  examples: string[];
+  examples: ExampleInfo[];
 }
 
 export interface WordData {

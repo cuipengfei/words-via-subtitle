@@ -3,6 +3,7 @@ import {
   DictionaryAPIResponse,
   MeaningBlock,
   DefinitionInfo,
+  ExampleInfo, // Import ExampleInfo
 } from '@shared/types';
 import { translate } from 'bing-translate-api';
 
@@ -94,73 +95,104 @@ export class DictionaryService {
     apiResponse: DictionaryAPIResponse[]
   ): Promise<DictionaryEntry | null> {
     if (!apiResponse || apiResponse.length === 0) {
-      console.log('[DictionaryService] API response is empty or null.');
       return null;
     }
-    console.log('[DictionaryService] Received API response:', JSON.stringify(apiResponse, null, 2));
 
     const primaryEntry = apiResponse[0];
     const word = primaryEntry.word;
     const phonetic = primaryEntry.phonetics.find((p) => p.text)?.text;
 
+    // 1. 收集所有需要翻译的文本
     const allExamples = new Set<string>();
-    const meaningBlocks: MeaningBlock[] = [];
-
-    for (const entry of apiResponse) {
-      for (const meaning of entry.meanings) {
-        const definitionsToTranslate: string[] = meaning.definitions.map((def) => def.definition);
-
+    const allPartsOfSpeech = new Set<string>();
+    apiResponse.forEach((entry) => {
+      entry.meanings.forEach((meaning) => {
+        allPartsOfSpeech.add(meaning.partOfSpeech);
         meaning.definitions.forEach((def) => {
           if (def.example) {
             allExamples.add(def.example);
           }
         });
+      });
+    });
 
-        console.log(
-          `[DictionaryService] Text to translate for part of speech "${
-            meaning.partOfSpeech
-          }":\n${definitionsToTranslate.join('\n')}`
-        );
+    const examplesToTranslate = Array.from(allExamples);
+    const partsOfSpeechToTranslate = Array.from(allPartsOfSpeech);
 
-        try {
-          const res = await translate(definitionsToTranslate.join('\n'), 'en', 'zh-Hans');
-          console.log(
-            `[DictionaryService] Translation successful for "${meaning.partOfSpeech}". Raw response:`,
-            JSON.stringify(res, null, 2)
-          );
+    // 2. 并行执行所有翻译任务
+    const [translatedExamples, translatedPartsOfSpeech, translatedWordHead] = await Promise.all([
+      translate(examplesToTranslate.join('\n'), 'en', 'zh-Hans').catch((e) => {
+        console.error('Failed to translate examples:', e);
+        return null; // 如果失败则返回null
+      }),
+      translate(partsOfSpeechToTranslate.join('\n'), 'en', 'zh-Hans').catch((e) => {
+        console.error('Failed to translate parts of speech:', e);
+        return null; // 如果失败则返回null
+      }),
+      translate(word, 'en', 'zh-Hans').catch((e) => {
+        console.error(`Failed to translate word "${word}":`, e);
+        return null;
+      }),
+    ]);
 
-          const translatedDefinitions = res?.translation?.split('\n') || [];
+    const exampleMap = new Map<string, string>();
+    if (translatedExamples && translatedExamples.translation) {
+      translatedExamples.translation
+        .split('\n')
+        .forEach((trans, i) => exampleMap.set(examplesToTranslate[i], trans));
+    }
 
-          const definitionInfos: DefinitionInfo[] = definitionsToTranslate.map((englishDef, i) => ({
-            english: englishDef,
-            chinese: translatedDefinitions[i] || '翻译不可用',
+    const posMap = new Map<string, string>();
+    if (translatedPartsOfSpeech && translatedPartsOfSpeech.translation) {
+      translatedPartsOfSpeech.translation
+        .split('\n')
+        .forEach((trans, i) => posMap.set(partsOfSpeechToTranslate[i], trans));
+    }
+
+    const wordHeadTranslation =
+      (translatedWordHead && translatedWordHead.translation) || '翻译失败';
+
+    // 3. 构建完整的MeaningBlocks，包含释义的翻译
+    const meaningBlocks: MeaningBlock[] = await Promise.all(
+      apiResponse.flatMap((entry) =>
+        entry.meanings.map(async (meaning) => {
+          const definitionsToTranslate = meaning.definitions.map((d) => d.definition);
+          let translatedDefinitions: string[] = [];
+
+          try {
+            const res = await translate(definitionsToTranslate.join('\n'), 'en', 'zh-Hans');
+            if (res && res.translation) {
+              translatedDefinitions = res.translation.split('\n');
+            }
+          } catch (e) {
+            console.error(`Failed to translate definitions for ${meaning.partOfSpeech}:`, e);
+          }
+
+          const definitionInfos: DefinitionInfo[] = meaning.definitions.map((def, i) => ({
+            english: def.definition,
+            chinese: translatedDefinitions[i] || '翻译失败',
           }));
 
-          meaningBlocks.push({
+          return {
             partOfSpeech: meaning.partOfSpeech,
+            chinesePartOfSpeech: posMap.get(meaning.partOfSpeech) || '翻译失败',
             definitions: definitionInfos,
-          });
-        } catch (err) {
-          console.error(
-            `[DictionaryService] Translation failed for "${meaning.partOfSpeech}"`,
-            err
-          );
-          meaningBlocks.push({
-            partOfSpeech: meaning.partOfSpeech,
-            definitions: definitionsToTranslate.map((englishDef) => ({
-              english: englishDef,
-              chinese: '翻译失败',
-            })),
-          });
-        }
-      }
-    }
+          };
+        })
+      )
+    );
+
+    const finalExamples: ExampleInfo[] = examplesToTranslate.map((ex) => ({
+      english: ex,
+      chinese: exampleMap.get(ex) || '翻译失败',
+    }));
 
     const finalEntry: DictionaryEntry = {
       word,
+      wordHeadTranslation,
       phonetic: phonetic || undefined,
       meanings: meaningBlocks,
-      examples: Array.from(allExamples).slice(0, 5),
+      examples: finalExamples.slice(0, 5), // 限制最终例句数量
     };
 
     console.log(
