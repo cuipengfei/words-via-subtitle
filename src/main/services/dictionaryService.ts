@@ -135,7 +135,7 @@ export class DictionaryService {
     // 查找最佳音标文本（优先选择带音频的）
     let phonetic = primaryEntry.phonetic;
     if (!phonetic) {
-      const phoneticWithAudio = primaryEntry.phonetics.find(p => p.audio);
+      const phoneticWithAudio = primaryEntry.phonetics.find((p) => p.audio);
       phonetic = phoneticWithAudio?.text || primaryEntry.phonetics[0]?.text;
     }
 
@@ -144,8 +144,8 @@ export class DictionaryService {
     const structuredTranslationLines: string[] = [];
 
     // 聚合所有条目和释义的数据
-    apiResponse.forEach(entry => {
-      entry.meanings.forEach(meaning => {
+    apiResponse.forEach((entry) => {
+      entry.meanings.forEach((meaning) => {
         allPartsOfSpeech.add(meaning.partOfSpeech);
 
         structuredTranslationLines.push(`[${meaning.partOfSpeech}]`);
