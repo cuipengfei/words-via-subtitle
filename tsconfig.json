@@ -3,6 +3,7 @@
     "target": "es2020",
     "module": "commonjs",
     "lib": ["es2020", "dom"],
+    "types": ["vitest/globals"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
