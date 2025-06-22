@@ -15,6 +15,7 @@ const IpcChannels = {
   GET_SETTINGS: 'get-settings',
   UPDATE_SETTINGS: 'update-settings',
   LOOKUP_WORD: 'lookup-word',
+  CHECK_FILE_EXISTS: 'check-file-exists',
 };
 
 // 临时内联类型定义
@@ -32,6 +33,7 @@ interface ElectronAPI {
   getSettings: () => Promise<any>;
   updateSettings: (settings: any) => Promise<void>;
   lookupWord: (word: string) => Promise<any>;
+  checkFileExists: (filePath: string) => Promise<boolean>;
   isDevMode: () => boolean;
 }
 
@@ -67,9 +69,12 @@ const electronAPI: ElectronAPI = {
   // 应用设置
   getSettings: () => ipcRenderer.invoke(IpcChannels.GET_SETTINGS),
   updateSettings: (settings: any) => ipcRenderer.invoke(IpcChannels.UPDATE_SETTINGS, settings),
-
   // 词典查询
   lookupWord: (word: string) => ipcRenderer.invoke(IpcChannels.LOOKUP_WORD, word),
+
+  // 文件检查
+  checkFileExists: (filePath: string) =>
+    ipcRenderer.invoke(IpcChannels.CHECK_FILE_EXISTS, filePath),
 
   // 系统功能
   isDevMode: () => process.env.NODE_ENV === 'development',

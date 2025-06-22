@@ -2,6 +2,7 @@ import { ipcMain, dialog } from 'electron';
 import { IpcChannels } from '../shared/ipc';
 import { SubtitleParserService } from './services/subtitleParser';
 import { DictionaryService } from './services/dictionaryService';
+import * as fs from 'fs';
 
 export function registerIpcHandlers(
   subtitleParser: SubtitleParserService,
@@ -69,6 +70,15 @@ export function registerIpcHandlers(
       console.log(`未找到释义: ${word}`);
     }
     return definition;
+  });
+  // 文件检查处理器
+  ipcMain.handle(IpcChannels.CHECK_FILE_EXISTS, async (_, filePath: string) => {
+    try {
+      await fs.promises.access(filePath, fs.constants.F_OK);
+      return true;
+    } catch (error) {
+      return false;
+    }
   });
 
   console.log('IPC 处理器注册完成');

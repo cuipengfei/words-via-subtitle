@@ -177,7 +177,10 @@ export function WordDefinition({
       </div>
 
       {/* 释义内容区域 - 独立滚动 */}
-      <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}>
+      <div
+        style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}
+        data-testid="word-definition"
+      >
         {/* 单词标题区 */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">

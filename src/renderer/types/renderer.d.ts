@@ -7,6 +7,7 @@ declare global {
       parseSubtitleFile: (filePath: string) => Promise<ParseResult>;
       lookupWord: (word: string) => Promise<DictionaryEntry | null>;
       openVideoFile: () => Promise<string | null>;
+      checkFileExists: (filePath: string) => Promise<boolean>;
     };
   }
 }

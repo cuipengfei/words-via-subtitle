@@ -3,8 +3,11 @@ import Head from 'next/head';
 import { TopBar } from '@/renderer/components/TopBar';
 import { WordList, WordListRef } from '@/renderer/components/WordList';
 import { WordDefinition } from '@/renderer/components/WordDefinition';
-import { VideoPlayer, VideoPlayerRef } from '@/renderer/components/VideoPlayer';
-import { SubtitleOverlay } from '@/renderer/components/SubtitleOverlay';
+import {
+  VideoPanelContainer,
+  VideoPanelContainerRef,
+} from '@/renderer/components/VideoPanelContainer';
+// import { SubtitleOverlay } from '@/renderer/components/SubtitleOverlay';
 import { StatusBar } from '@/renderer/components/StatusBar';
 import { useKeyboardShortcuts } from '@/renderer/hooks/useKeyboardShortcuts';
 import type { SubtitleEntry, Word, DictionaryEntry } from '@shared/types';
@@ -27,7 +30,7 @@ export default function AppPage() {
 
   // 引用
   const wordListRef = useRef<WordListRef>(null);
-  const videoPlayerRef = useRef<VideoPlayerRef>(null);
+  const videoPlayerRef = useRef<VideoPanelContainerRef>(null);
 
   const handleFileSelect = async () => {
     setError(null);
@@ -52,6 +55,34 @@ export default function AppPage() {
       setError(parseResult.error || 'Failed to parse subtitle file.');
     }
   };
+  // 文件名匹配函数
+  const matchSubtitleFile = async (videoFilePath: string) => {
+    // 获取视频文件名（不含扩展名）和路径
+    const lastSlashIndex = Math.max(
+      videoFilePath.lastIndexOf('/'),
+      videoFilePath.lastIndexOf('\\')
+    );
+    const filePath = videoFilePath.substring(0, lastSlashIndex);
+    const fileNameWithExt = videoFilePath.substring(lastSlashIndex + 1);
+    const fileName = fileNameWithExt.substring(0, fileNameWithExt.lastIndexOf('.'));
+
+    // 尝试查找同名字幕文件（支持多种扩展名）
+    const extensions = ['.srt', '.ass', '.ssa', '.vtt'];
+
+    for (const ext of extensions) {
+      const subtitlePath = `${filePath}/${fileName}${ext}`;
+      // 检查文件是否存在
+      try {
+        const exists = await window.electronAPI.checkFileExists(subtitlePath);
+        if (exists) {
+          return subtitlePath;
+        }
+      } catch (error) {
+        console.error('检查字幕文件出错:', error);
+      }
+    }
+    return null;
+  };
 
   const handleVideoSelect = async () => {
     setError(null);
@@ -64,6 +95,24 @@ export default function AppPage() {
     setVideoFileName(filePath.split(/[\\/]/).pop() || null);
     // 创建本地文件URL用于视频播放
     setVideoSrc(`file://${filePath}`);
+
+    // 尝试自动匹配字幕文件
+    try {
+      const subtitlePath = await matchSubtitleFile(filePath);
+      if (subtitlePath) {
+        // 自动加载匹配的字幕文件
+        setSelectedFileName(subtitlePath.split(/[\\/]/).pop() || null);
+        const parseResult = await window.electronAPI.parseSubtitleFile(subtitlePath);
+        if (parseResult.success && parseResult.data) {
+          setSubtitleEntries(parseResult.data.entries);
+          setWords(parseResult.data.words);
+        } else {
+          console.warn('自动匹配的字幕文件解析失败');
+        }
+      }
+    } catch (error) {
+      console.error('自动匹配字幕文件出错:', error);
+    }
   };
 
   const handleVideoTimeUpdate = (time: number) => {
@@ -190,25 +239,25 @@ export default function AppPage() {
               position: 'relative',
             }}
           >
-            <VideoPlayer
-              ref={videoPlayerRef}
-              videoSrc={videoSrc}
-              currentTime={currentTime}
-              onTimeUpdate={handleVideoTimeUpdate}
-              onLoadedMetadata={handleVideoLoadedMetadata}
-              className="h-full"
-            />
-
-            {/* 字幕覆盖层 */}
-            {videoSrc && subtitleEntries.length > 0 && (
-              <SubtitleOverlay
+            {videoSrc ? (
+              <VideoPanelContainer
+                ref={videoPlayerRef}
+                videoSrc={videoSrc}
                 subtitles={subtitleEntries}
-                currentTime={currentTime}
                 onWordClick={handleWordClickFromSubtitle}
+                className="h-full"
               />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full bg-gray-900 text-gray-400">
+                <button
+                  onClick={handleVideoSelect}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-2"
+                >
+                  <span>选择视频文件</span>
+                </button>
+              </div>
             )}
           </div>
-
           {/* 右栏：单词释义 */}
           <div
             style={{

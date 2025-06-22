@@ -24,6 +24,7 @@ export interface VideoPlayerRef {
   skipBackward: () => void;
   skipForward: () => void;
   toggleFullscreen: () => void;
+  setPlaybackSpeed: (speed: number) => void;
 }
 
 export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
@@ -36,6 +37,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // 添加播放速度状态
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // 格式化时间显示
@@ -161,12 +163,21 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
       }
     }, [currentTime]);
 
+    // 播放速度控制
+    const handlePlaybackSpeedChange = (speed: number) => {
+      setPlaybackSpeed(speed);
+      if (videoRef.current) {
+        videoRef.current.playbackRate = speed;
+      }
+    };
+
     // 暴露给父组件的方法
     useImperativeHandle(ref, () => ({
       togglePlay,
       skipBackward,
       skipForward,
       toggleFullscreen,
+      setPlaybackSpeed: handlePlaybackSpeedChange,
     }));
 
     if (!videoSrc) {
@@ -302,6 +313,22 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 onChange={handleVolumeChange}
                 className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer slider"
               />
+
+              {/* 播放速度控制 */}
+              <div className="flex items-center">
+                <select
+                  value={playbackSpeed}
+                  onChange={(e) => handlePlaybackSpeedChange(parseFloat(e.target.value))}
+                  className="bg-black/50 text-white text-xs rounded px-2 py-1 outline-none border border-white/20"
+                >
+                  <option value="0.5">0.5x</option>
+                  <option value="0.75">0.75x</option>
+                  <option value="1">1x</option>
+                  <option value="1.25">1.25x</option>
+                  <option value="1.5">1.5x</option>
+                  <option value="2">2x</option>
+                </select>
+              </div>
 
               {/* 设置按钮 */}
               <button className="p-2 text-white hover:text-indigo-400 transition-colors">

@@ -28,10 +28,13 @@ export function SubtitleOverlay({
   const renderSubtitleText = (text: string) => {
     // 简单的单词分割，保留标点符号
     const words = text.split(/(\s+|[.,!?;:])/);
-    
+
     return words.map((word, index) => {
-      const trimmedWord = word.trim().toLowerCase().replace(/[.,!?;:]/g, '');
-      
+      const trimmedWord = word
+        .trim()
+        .toLowerCase()
+        .replace(/[.,!?;:]/g, '');
+
       // 如果是空白字符或标点符号，直接返回
       if (!trimmedWord || /^\s+$/.test(word) || /^[.,!?;:]+$/.test(word)) {
         return <span key={index}>{word}</span>;
@@ -61,6 +64,7 @@ export function SubtitleOverlay({
   return (
     <div
       className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 max-w-4xl px-6 ${className}`}
+      data-testid="subtitle-overlay"
     >
       <div className="bg-black/80 backdrop-blur-sm rounded-lg px-6 py-3 shadow-lg">
         <p className="text-white text-lg leading-relaxed text-center font-medium">
@@ -103,16 +107,16 @@ export function SubtitleList({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 ${className}`}
+    >
       {/* 头部 */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
           <span className="text-indigo-600">📝</span>
           字幕列表
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          点击字幕跳转到对应时间点
-        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">点击字幕跳转到对应时间点</p>
       </div>
 
       {/* 字幕列表 */}

@@ -11,6 +11,7 @@ export const IpcChannels = {
   UPDATE_SETTINGS: 'update-settings',
   SAVE_CONFIG: 'save-config',
   UPDATE_WORD_STATUS: 'update-word-status',
+  CHECK_FILE_EXISTS: 'check-file-exists', // 新增：用于检查文件是否存在
 } as const;
 
 export type IpcChannelKeys = keyof typeof IpcChannels;
