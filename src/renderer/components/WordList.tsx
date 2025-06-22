@@ -41,9 +41,23 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
     };
 
     return (
-      <div className="h-full bg-gray-50 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+      <div
+        style={{
+          height: '100%',
+          backgroundColor: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}
+      >
         {/* 面板头部 - 固定不滚动 */}
-        <div className="flex-none p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <div
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: 'white',
+          }}
+        >
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <List size={20} className="text-indigo-600" />
@@ -72,25 +86,18 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
         </div>
 
         {/* 列表内容区域 - 独立滚动 */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ height: 0 }}>
+        <div style={{ height: 'calc(100% - 120px)', overflowY: 'auto', padding: '8px' }}>
           {filteredAndSortedWords.length === 0 ? (
-            <div className="space-y-2 p-2">
-              {/* 添加测试数据来验证滚动 */}
-              {Array.from({ length: 50 }, (_, i) => (
-                <div
-                  key={`test-${i}`}
-                  className="group border-l-4 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:border-l-gray-300 dark:hover:border-l-gray-600 transition-all duration-150"
-                >
-                  <div className="flex justify-between items-center px-4 py-3 cursor-pointer">
-                    <span className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
-                      test-word-{i + 1}
-                    </span>
-                    <Badge variant="default" size="sm">
-                      {Math.floor(Math.random() * 20) + 1}次
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8 h-full">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                <List size={24} className="text-white" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                暂无单词
+              </h3>
+              <p className="text-center text-sm max-w-xs leading-relaxed">
+                请选择字幕文件开始学习，系统会自动提取单词并显示在这里。
+              </p>
             </div>
           ) : (
             filteredAndSortedWords.map((word) => (

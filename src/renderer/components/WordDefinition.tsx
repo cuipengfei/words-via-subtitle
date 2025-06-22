@@ -33,8 +33,22 @@ export function WordDefinition({
 }) {
   if (isLoading) {
     return (
-      <div className="h-full bg-white dark:bg-gray-900">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+      <div
+        style={{
+          height: '100%',
+          backgroundColor: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: 'white',
+          }}
+        >
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <BookOpenText size={20} className="text-indigo-600" />
             单词释义
@@ -47,49 +61,52 @@ export function WordDefinition({
 
   if (!selectedWord) {
     return (
-      <div className="h-full bg-white dark:bg-gray-900">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+      <div
+        style={{
+          height: '100%',
+          backgroundColor: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: 'white',
+          }}
+        >
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <BookOpenText size={20} className="text-indigo-600" />
             单词释义
           </h2>
         </div>
-        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-8">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
-            <MessageCircleQuestion size={32} className="text-white" />
-          </div>
-          <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">
-            选择一个单词
-          </h3>
-          <p className="text-center text-sm max-w-sm leading-relaxed mb-6">
-            从左侧列表中选择一个单词，或点击视频字幕中的单词，查看详细的释义和用法示例。
-          </p>
+        <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}>
+          <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+              <MessageCircleQuestion size={32} className="text-white" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">
+              选择一个单词
+            </h3>
+            <p className="text-center text-sm max-w-sm leading-relaxed mb-6">
+              从左侧列表中选择一个单词，或点击视频字幕中的单词，查看详细的释义和用法示例。
+            </p>
 
-          {/* 添加测试内容来验证滚动 */}
-          <div className="w-full space-y-4">
-            {Array.from({ length: 20 }, (_, i) => (
-              <div key={i} className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                <h4 className="font-semibold mb-2">测试内容 {i + 1}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  这是一些测试内容，用来验证滚动功能是否正常工作。每个块都包含足够的文本来测试垂直滚动。
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua.
-                </p>
+            <div className="flex items-center gap-4 text-xs text-gray-400">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>英英释义</span>
               </div>
-            ))}
-          </div>
-          <div className="flex items-center gap-4 text-xs text-gray-400">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>英英释义</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>中文翻译</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>例句展示</span>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>中文翻译</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span>例句展示</span>
+              </div>
             </div>
           </div>
         </div>
@@ -99,8 +116,22 @@ export function WordDefinition({
 
   if (!definition) {
     return (
-      <div className="h-full bg-white dark:bg-gray-900">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+      <div
+        style={{
+          height: '100%',
+          backgroundColor: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            padding: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            backgroundColor: 'white',
+          }}
+        >
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <BookOpenText size={20} className="text-indigo-600" />
             单词释义
@@ -122,9 +153,23 @@ export function WordDefinition({
   }
 
   return (
-    <div className="h-full bg-white dark:bg-gray-900 flex flex-col">
+    <div
+      style={{
+        height: '100%',
+        backgroundColor: '#f9fafb',
+        border: '1px solid #e5e7eb',
+        borderRadius: '8px',
+        overflow: 'hidden',
+      }}
+    >
       {/* 面板头部 - 固定不滚动 */}
-      <div className="flex-none p-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid #e5e7eb',
+          backgroundColor: 'white',
+        }}
+      >
         <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
           <BookOpenText size={20} className="text-indigo-600" />
           单词释义
@@ -132,7 +177,7 @@ export function WordDefinition({
       </div>
 
       {/* 释义内容区域 - 独立滚动 */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6" style={{ height: 0 }}>
+      <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}>
         {/* 单词标题区 */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
