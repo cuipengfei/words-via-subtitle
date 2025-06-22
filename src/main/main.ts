@@ -1,11 +1,27 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, protocol } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import * as fs from 'fs';
 import isDev from 'electron-is-dev';
 import { registerIpcHandlers } from './ipc-handlers';
 import { SubtitleParserService } from './services/subtitleParser';
 import { DictionaryService } from './services/dictionaryService';
 import { createMenu } from './menu';
+
+// 在应用启动前注册自定义协议方案
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'video-file',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true,
+      bypassCSP: true,
+    },
+  },
+]);
 
 // 全局保存对主窗口的引用
 let mainWindow: BrowserWindow | null = null;
@@ -58,6 +74,7 @@ async function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      webSecurity: false, // 允许访问本地文件
     },
     titleBarStyle: 'default',
     show: false, // 先不显示，等加载完成后再显示
@@ -93,8 +110,98 @@ async function createWindow() {
   });
 }
 
-// 当Electron完成初始化后创建窗口
-app.whenReady().then(createWindow);
+// 注册自定义协议用于安全访问本地视频文件
+function registerVideoProtocol() {
+  console.log('正在注册 video-file 协议...');
+
+  protocol.registerStreamProtocol('video-file', (request, callback) => {
+    console.log('收到视频协议请求:', request.url);
+
+    try {
+      // 从 URL 中提取文件路径
+      const filePath = decodeURIComponent(request.url.replace('video-file://', ''));
+      console.log('解析的文件路径:', filePath);
+
+      // 验证文件存在且是视频文件
+      if (!fs.existsSync(filePath)) {
+        console.error('视频文件不存在:', filePath);
+        callback({ error: -6 }); // FILE_NOT_FOUND
+        return;
+      }
+
+      // 检查文件扩展名是否为支持的视频格式
+      const ext = path.extname(filePath).toLowerCase();
+      const supportedFormats = ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v'];
+
+      if (!supportedFormats.includes(ext)) {
+        console.error('不支持的视频格式:', ext);
+        callback({ error: -10 }); // INVALID_URL
+        return;
+      }
+
+      // 获取文件统计信息
+      const stat = fs.statSync(filePath);
+
+      // 根据文件扩展名确定 MIME 类型
+      const mimeTypes: { [key: string]: string } = {
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.mkv': 'video/x-matroska',
+        '.avi': 'video/x-msvideo',
+        '.mov': 'video/quicktime',
+        '.wmv': 'video/x-ms-wmv',
+        '.flv': 'video/x-flv',
+        '.m4v': 'video/mp4',
+      };
+
+      const mimeType = mimeTypes[ext] || 'video/mp4';
+
+      console.log('提供视频文件流访问:', filePath, `(${(stat.size / 1024 / 1024).toFixed(2)}MB)`);
+
+      // 创建可读流
+      const stream = fs.createReadStream(filePath);
+
+      callback({
+        statusCode: 200,
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': stat.size.toString(),
+          'Accept-Ranges': 'bytes',
+          'Cache-Control': 'no-cache',
+        },
+        data: stream,
+      });
+    } catch (error) {
+      console.error('视频协议处理错误:', error);
+      callback({ error: -2 }); // GENERIC_FAILURE
+    }
+  });
+}
+
+// 在应用准备就绪之前注册协议
+app.whenReady().then(() => {
+  console.log('应用准备就绪，开始注册协议和创建窗口...');
+
+  // 注册自定义协议
+  registerVideoProtocol();
+
+  // 创建窗口
+  createWindow();
+});
+
+// 确保协议在应用启动前就注册
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'video-file',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+      stream: true,
+    },
+  },
+]);
 
 // 所有窗口关闭时退出应用
 app.on('window-all-closed', () => {

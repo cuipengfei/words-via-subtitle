@@ -11,6 +11,7 @@ const IpcChannels = {
   UPDATE_WORD_STATUS: 'update-word-status',
   OPEN_VIDEO_FILE: 'open-video-file',
   OPEN_SUBTITLE_FILE: 'open-subtitle-file',
+  GET_VIDEO_URL: 'get-video-url',
   SAVE_CONFIG: 'save-config',
   GET_SETTINGS: 'get-settings',
   UPDATE_SETTINGS: 'update-settings',
@@ -29,6 +30,7 @@ interface ElectronAPI {
   updateWordStatus: (word: string, status: any) => Promise<void>;
   openVideoFile: () => Promise<string>;
   openSubtitleFile: () => Promise<string>;
+  getVideoUrl: (filePath: string) => Promise<string>;
   saveConfig: (data: any) => Promise<void>;
   getSettings: () => Promise<any>;
   updateSettings: (settings: any) => Promise<void>;
@@ -64,6 +66,7 @@ const electronAPI: ElectronAPI = {
   // 文件操作
   openVideoFile: () => ipcRenderer.invoke(IpcChannels.OPEN_VIDEO_FILE),
   openSubtitleFile: () => ipcRenderer.invoke(IpcChannels.OPEN_SUBTITLE_FILE),
+  getVideoUrl: (filePath: string) => ipcRenderer.invoke(IpcChannels.GET_VIDEO_URL, filePath),
   saveConfig: (data: any) => ipcRenderer.invoke(IpcChannels.SAVE_CONFIG, data),
 
   // 应用设置
@@ -90,3 +93,5 @@ contextBridge.exposeInMainWorld('appInfo', {
 
 // 添加控制台日志，方便调试
 console.log('Preload script has been loaded');
+console.log('Available electronAPI methods:', Object.keys(electronAPI));
+console.log('getVideoUrl function exists:', typeof electronAPI.getVideoUrl);

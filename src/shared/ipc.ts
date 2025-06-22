@@ -7,6 +7,7 @@ export const IpcChannels = {
   PARSE_SUBTITLE_FILE: 'parse-subtitle-file',
   LOOKUP_WORD: 'lookup-word', // 新增：用于查询单词
   OPEN_VIDEO_FILE: 'open-video-file', // 新增：用于选择视频文件
+  GET_VIDEO_URL: 'get-video-url', // 新增：用于获取安全的视频URL
   GET_SETTINGS: 'get-settings',
   UPDATE_SETTINGS: 'update-settings',
   SAVE_CONFIG: 'save-config',
@@ -108,6 +109,7 @@ export interface ElectronAPI {
   // 文件操作
   openVideoFile: () => Promise<string>;
   openSubtitleFile: () => Promise<string>;
+  getVideoUrl: (filePath: string) => Promise<string>;
   saveConfig: (data: unknown) => Promise<void>;
 
   // 应用设置

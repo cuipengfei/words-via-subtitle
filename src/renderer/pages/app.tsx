@@ -118,8 +118,17 @@ export default function AppPage() {
     }
 
     setVideoFileName(filePath.split(/[\\/]/).pop() || null);
-    // 创建本地文件URL用于视频播放
-    setVideoSrc(`file://${filePath}`);
+
+    try {
+      // 获取安全的视频URL
+      const videoUrl = await window.electronAPI.getVideoUrl(filePath);
+      setVideoSrc(videoUrl);
+      console.log('设置视频源:', videoUrl);
+    } catch (error) {
+      console.error('获取视频URL失败:', error);
+      setError(`无法加载视频文件: ${error.message}`);
+      return;
+    }
 
     // 尝试自动匹配字幕文件
     try {

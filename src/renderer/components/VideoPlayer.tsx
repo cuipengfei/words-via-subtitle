@@ -228,6 +228,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
           src={videoSrc}
           className="w-full h-full object-contain"
           onClick={togglePlay}
+          data-testid="video-player"
         />
 
         {/* 加载指示器 */}
@@ -253,6 +254,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 value={currentTime}
                 onChange={handleProgressChange}
                 className="w-full h-2 bg-white/30 rounded-lg appearance-none cursor-pointer slider"
+                aria-label="Progress"
                 style={{
                   background: `linear-gradient(to right, #6366f1 0%, #6366f1 ${
                     duration > 0 ? (currentTime / duration) * 100 : 0
@@ -271,6 +273,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <button
                 onClick={skipBackward}
                 className="p-2 text-white hover:text-indigo-400 transition-colors"
+                aria-label="Skip Backward"
               >
                 <SkipBack size={20} />
               </button>
@@ -278,6 +281,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <button
                 onClick={togglePlay}
                 className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-colors"
+                aria-label="Play/Pause"
               >
                 {isPlaying ? <Pause size={20} /> : <Play size={20} />}
               </button>
@@ -285,6 +289,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <button
                 onClick={skipForward}
                 className="p-2 text-white hover:text-indigo-400 transition-colors"
+                aria-label="Skip Forward"
               >
                 <SkipForward size={20} />
               </button>
@@ -300,6 +305,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
               <button
                 onClick={toggleMute}
                 className="p-2 text-white hover:text-indigo-400 transition-colors"
+                aria-label="Mute/Unmute"
               >
                 {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
               </button>
@@ -312,6 +318,7 @@ export const VideoPlayer = forwardRef<VideoPlayerRef, VideoPlayerProps>(
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
                 className="w-20 h-1 bg-white/30 rounded-lg appearance-none cursor-pointer slider"
+                aria-label="Volume"
               />
 
               {/* 播放速度控制 */}

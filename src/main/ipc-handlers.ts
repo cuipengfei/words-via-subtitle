@@ -46,6 +46,32 @@ export function registerIpcHandlers(
     return result.filePaths[0];
   });
 
+  // 获取安全视频URL处理器
+  ipcMain.handle(IpcChannels.GET_VIDEO_URL, async (_, filePath: string) => {
+    try {
+      // 验证文件存在
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`视频文件不存在: ${filePath}`);
+      }
+
+      // 验证是支持的视频格式
+      const ext = filePath.split('.').pop()?.toLowerCase();
+      const supportedFormats = ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v'];
+
+      if (!ext || !supportedFormats.includes(ext)) {
+        throw new Error(`不支持的视频格式: ${ext}`);
+      }
+
+      // 由于设置了 webSecurity: false，可以直接使用 file:// URL
+      const videoUrl = `file://${filePath}`;
+      console.log(`生成视频文件URL: ${videoUrl}`);
+      return videoUrl;
+    } catch (error) {
+      console.error('生成视频URL失败:', error);
+      throw error;
+    }
+  });
+
   // 字幕解析处理器
   ipcMain.handle(IpcChannels.PARSE_SUBTITLE_FILE, async (_, filePath: string) => {
     console.log(`主进程收到解析请求: ${filePath}`);
