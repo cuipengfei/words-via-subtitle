@@ -18,7 +18,7 @@ test('应该能够正确加载和播放视频', async ({ page }) => {
   await page.waitForSelector('video');
 
   // 6. 测试播放控制
-  const playButton = await page.locator('button:has-text("播放"), button:has-text("暂停")').first();
+  const playButton = await page.locator('button[aria-label="播放"]');
   await playButton.click();
 
   // 7. 验证视频正在播放
@@ -37,7 +37,7 @@ test('应该能够正确加载和播放视频', async ({ page }) => {
   expect(isPaused).toBeTruthy();
 
   // 9. 测试播放速度控制
-  const speedControl = await page.locator('select').first();
+  const speedControl = await page.locator('select[aria-label="播放速度"]');
   await speedControl.selectOption('1.5');
 
   const playbackRate = await page.evaluate(() => {
@@ -47,14 +47,11 @@ test('应该能够正确加载和播放视频', async ({ page }) => {
   expect(playbackRate).toBe(1.5);
 
   // 10. 测试字幕显示
-  await page.waitForSelector('[data-testid="subtitle-overlay"]', { timeout: 5000 });
+  await page.waitForSelector('.subtitle-text');
 
   // 11. 测试字幕单词点击
-  const subtitleWord = page.locator('[data-testid="subtitle-overlay"] span').first();
-  if (await subtitleWord.isVisible()) {
-    await subtitleWord.click();
+  await page.locator('.subtitle-text span').first().click();
 
-    // 12. 验证词典查询已触发
-    await page.waitForSelector('[data-testid="word-definition"]', { timeout: 3000 });
-  }
+  // 12. 验证词典查询已触发
+  await page.waitForSelector('.word-definition');
 });

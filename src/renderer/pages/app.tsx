@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Head from 'next/head';
 import { TopBar } from '@/renderer/components/TopBar';
 import { WordList, WordListRef } from '@/renderer/components/WordList';
@@ -21,6 +21,31 @@ export default function AppPage() {
   const [wordDefinition, setWordDefinition] = useState<DictionaryEntry | null>(null);
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // 主题检测
+  useEffect(() => {
+    // 检测系统主题偏好
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkMode(mediaQuery.matches);
+
+    // 监听主题变化
+    const handleThemeChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleThemeChange);
+  }, []);
+
+  // 应用主题类到 document.documentElement
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   // 视频相关状态
   const [videoSrc, setVideoSrc] = useState<string | null>(null);
@@ -207,8 +232,8 @@ export default function AppPage() {
             width: '100%',
             gap: '8px',
             padding: '8px',
-            backgroundColor: '#f9fafb',
           }}
+          className="bg-gray-50 dark:bg-gray-800"
         >
           {/* 左栏：单词列表 */}
           <div
@@ -235,9 +260,9 @@ export default function AppPage() {
               flex: 1,
               height: '100%',
               overflow: 'hidden',
-              backgroundColor: '#f3f4f6',
               position: 'relative',
             }}
+            className="bg-gray-100 dark:bg-gray-700"
           >
             {videoSrc ? (
               <VideoPanelContainer

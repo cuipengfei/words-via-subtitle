@@ -4,7 +4,7 @@ module.exports = {
     './src/renderer/pages/**/*.{js,ts,jsx,tsx}',
     './src/renderer/components/**/*.{js,ts,jsx,tsx}',
   ],
-  darkMode: 'media',
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

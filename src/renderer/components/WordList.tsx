@@ -39,24 +39,23 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
       const seconds = totalSeconds % 60;
       return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
-
     return (
       <div
         style={{
           height: '100%',
-          backgroundColor: '#f9fafb',
           border: '1px solid #e5e7eb',
           borderRadius: '8px',
           overflow: 'hidden',
         }}
+        className="bg-white dark:bg-gray-900"
       >
         {/* 面板头部 - 固定不滚动 */}
         <div
           style={{
             padding: '16px',
             borderBottom: '1px solid #e5e7eb',
-            backgroundColor: 'white',
           }}
+          className="bg-gray-50 dark:bg-gray-800"
         >
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
@@ -84,29 +83,38 @@ export const WordList = forwardRef<WordListRef, WordListProps>(
             />
           </div>
         </div>
-
         {/* 列表内容区域 - 独立滚动 */}
-        <div style={{ height: 'calc(100% - 120px)', overflowY: 'auto', padding: '8px' }}>
+        <div
+          style={{ height: 'calc(100% - 120px)', overflowY: 'auto', padding: '8px' }}
+          className="bg-gray-50 dark:bg-gray-800"
+        >
           {filteredAndSortedWords.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8 h-full">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
-                <List size={24} className="text-white" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-                暂无单词
-              </h3>
-              <p className="text-center text-sm max-w-xs leading-relaxed">
-                请选择字幕文件开始学习，系统会自动提取单词并显示在这里。
-              </p>
+            <div className="space-y-2">
+              {/* 添加测试数据来验证滚动 */}
+              {Array.from({ length: 50 }, (_, i) => (
+                <div
+                  key={`test-${i}`}
+                  className="group border-l-4 border-transparent hover:bg-white dark:hover:bg-gray-700 hover:border-l-gray-300 dark:hover:border-l-gray-500 transition-all duration-150 mb-1 rounded-r-md bg-white dark:bg-gray-900"
+                >
+                  <div className="flex justify-between items-center px-4 py-3 cursor-pointer">
+                    <span className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+                      test-word-{i + 1}
+                    </span>
+                    <Badge variant="default" size="sm">
+                      {(i % 20) + 1}次
+                    </Badge>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             filteredAndSortedWords.map((word) => (
               <div
                 key={word.original}
-                className={`group border-l-4 transition-all duration-150 ${
+                className={`group border-l-4 transition-all duration-150 mb-1 rounded-r-md ${
                   selectedWord === word.original
-                    ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-500 text-indigo-900 dark:text-indigo-100'
-                    : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:border-l-gray-300 dark:hover:border-l-gray-600'
+                    ? 'bg-indigo-100 dark:bg-indigo-900/40 border-indigo-500 text-indigo-900 dark:text-indigo-100'
+                    : 'border-transparent hover:bg-white dark:hover:bg-gray-700 hover:border-l-gray-300 dark:hover:border-l-gray-500 bg-white dark:bg-gray-900'
                 }`}
               >
                 {/* 主要单词信息 */}

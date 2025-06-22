@@ -36,18 +36,18 @@ export function WordDefinition({
       <div
         style={{
           height: '100%',
-          backgroundColor: '#f9fafb',
           border: '1px solid #e5e7eb',
           borderRadius: '8px',
           overflow: 'hidden',
         }}
+        className="bg-white dark:bg-gray-900"
       >
         <div
           style={{
             padding: '16px',
             borderBottom: '1px solid #e5e7eb',
-            backgroundColor: 'white',
           }}
+          className="bg-gray-50 dark:bg-gray-800"
         >
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <BookOpenText size={20} className="text-indigo-600" />
@@ -58,31 +58,33 @@ export function WordDefinition({
       </div>
     );
   }
-
   if (!selectedWord) {
     return (
       <div
         style={{
           height: '100%',
-          backgroundColor: '#f9fafb',
           border: '1px solid #e5e7eb',
           borderRadius: '8px',
           overflow: 'hidden',
         }}
+        className="bg-white dark:bg-gray-900"
       >
         <div
           style={{
             padding: '16px',
             borderBottom: '1px solid #e5e7eb',
-            backgroundColor: 'white',
           }}
+          className="bg-gray-50 dark:bg-gray-800"
         >
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <BookOpenText size={20} className="text-indigo-600" />
             单词释义
           </h2>
         </div>
-        <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}>
+        <div
+          style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}
+          className="bg-gray-50 dark:bg-gray-800"
+        >
           <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
             <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
               <MessageCircleQuestion size={32} className="text-white" />
@@ -93,6 +95,22 @@ export function WordDefinition({
             <p className="text-center text-sm max-w-sm leading-relaxed mb-6">
               从左侧列表中选择一个单词，或点击视频字幕中的单词，查看详细的释义和用法示例。
             </p>
+
+            {/* 添加测试内容来验证滚动 */}
+            <div className="w-full space-y-4 mb-6">
+              {Array.from({ length: 20 }, (_, i) => (
+                <div key={i} className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                    测试内容 {i + 1}
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    这是一些测试内容，用来验证滚动功能是否正常工作。每个块都包含足够的文本来测试垂直滚动。
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
+                  </p>
+                </div>
+              ))}
+            </div>
 
             <div className="flex items-center gap-4 text-xs text-gray-400">
               <div className="flex items-center gap-2">
@@ -113,62 +131,65 @@ export function WordDefinition({
       </div>
     );
   }
-
   if (!definition) {
     return (
       <div
         style={{
           height: '100%',
-          backgroundColor: '#f9fafb',
           border: '1px solid #e5e7eb',
           borderRadius: '8px',
           overflow: 'hidden',
         }}
+        className="bg-white dark:bg-gray-900"
       >
         <div
           style={{
             padding: '16px',
             borderBottom: '1px solid #e5e7eb',
-            backgroundColor: 'white',
           }}
+          className="bg-gray-50 dark:bg-gray-800"
         >
           <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <BookOpenText size={20} className="text-indigo-600" />
             单词释义
           </h2>
         </div>
-        <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 p-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
-            <MessageCircleQuestion size={24} className="text-white" />
+        <div
+          style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}
+          className="bg-gray-50 dark:bg-gray-800"
+        >
+          <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 p-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <MessageCircleQuestion size={24} className="text-white" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+              释义查询失败
+            </h3>
+            <p className="text-center text-sm leading-relaxed">
+              抱歉，无法获取单词 "{selectedWord}" 的释义信息。请检查网络连接后重试。
+            </p>
           </div>
-          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-            释义查询失败
-          </h3>
-          <p className="text-center text-sm leading-relaxed">
-            抱歉，无法获取单词 "{selectedWord}" 的释义信息。请检查网络连接后重试。
-          </p>
         </div>
       </div>
     );
   }
-
   return (
     <div
       style={{
         height: '100%',
-        backgroundColor: '#f9fafb',
         border: '1px solid #e5e7eb',
         borderRadius: '8px',
         overflow: 'hidden',
       }}
+      className="bg-white dark:bg-gray-900"
     >
       {/* 面板头部 - 固定不滚动 */}
       <div
         style={{
           padding: '16px',
           borderBottom: '1px solid #e5e7eb',
-          backgroundColor: 'white',
         }}
+        className="bg-gray-50 dark:bg-gray-800"
       >
         <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 dark:text-gray-100">
           <BookOpenText size={20} className="text-indigo-600" />
@@ -179,6 +200,7 @@ export function WordDefinition({
       {/* 释义内容区域 - 独立滚动 */}
       <div
         style={{ height: 'calc(100% - 80px)', overflowY: 'auto', padding: '16px' }}
+        className="bg-white dark:bg-gray-900"
         data-testid="word-definition"
       >
         {/* 单词标题区 */}
