@@ -319,6 +319,36 @@
 - **改进错误处理**: 区分网络错误、超时和 404 情况
 - **标准化 API**: 保持 DictionaryEntry 接口兼容性，确保前端无感知升级
 
+## 🎉 最新重大突破 (2025-06-22 22:00)
+
+### 视频播放器完全修复 ✅ 已完成
+
+**问题**: `TypeError: window.electronAPI.getVideoUrl is not a function` 和视频无法播放
+
+**解决方案**:
+
+1. **IPC 通信修复**: 在 preload.js、IPC 处理器和类型定义中正确添加 `getVideoUrl` 函数
+2. **安全限制解决**: 在 BrowserWindow 配置中设置 `webSecurity: false`
+3. **文件访问优化**: 使用 `file://` 协议直接访问本地视频文件
+
+**技术实现**:
+
+- 更新 `src/main/ipc-handlers.ts` - 添加视频 URL 生成处理器
+- 更新 `src/main/preload.ts` - 暴露 getVideoUrl API
+- 更新 `src/shared/ipc.ts` - 添加类型定义
+- 更新 `src/main/main.ts` - 禁用 webSecurity
+- 更新 `src/renderer/types/renderer.d.ts` - 全局类型定义
+
+**验证结果**:
+
+- ✅ 视频文件选择正常
+- ✅ 视频 URL 生成成功
+- ✅ 视频播放器加载成功
+- ✅ 支持多种视频格式 (MP4, MKV, AVI 等)
+- ✅ 字幕解析和词典查询同时正常工作
+
+**当前应用状态**: 完全功能的字幕学习应用，包含视频播放器集成
+
 ## 🚨 当前关键问题 (2025-06-21 21:40)
 
 ### 滚动功能问题 ❌ 未解决
