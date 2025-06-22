@@ -9,10 +9,10 @@
 | 阶段三 | 现代化 UI 界面开发   | 已完成     | 100%       |
 | 阶段四 | 在线词典服务集成     | 已完成     | 100%       |
 | MVP    | **最小可行产品**     | **已达成** | **100%**   |
-| 阶段五 | 视频播放器集成       | 待开发     | 0%         |
-| 阶段六 | 学习记录管理系统     | 待开发     | 0%         |
+| 阶段五 | 视频播放器集成       | **已完成** | **100%**   |
+| 阶段六 | 学习记录管理系统     | **已完成** | **100%**   |
 
-**当前状态**: MVP 完成，核心字幕学习功能完全可用，进入功能扩展阶段。
+**当前状态**: 功能完整的桌面应用，包含完整的视频播放器集成和学习记录系统。测试覆盖率：主进程 100%。
 
 ## 阶段一：项目初始化与基础架构 ✅ 已完成
 
@@ -380,9 +380,9 @@
 - **Development Workflow**: The `bun dev` script successfully starts the development environment with hot-reloading for both main and renderer processes.
 - **Build Process**: The `bun build` script correctly compiles TypeScript for the main process and builds the Next.js application for the renderer.
 - **Main Process Services**: The core services in the main process have been implemented and are covered by unit tests.
-    - `FileService`: Handles file-related operations.
-    - `SubtitleService`: Parses subtitle files.
-    - `StoreService`: Manages persistent application data.
+  - `FileService`: Handles file-related operations.
+  - `SubtitleService`: Parses subtitle files.
+  - `StoreService`: Manages persistent application data.
 - **Main Process Testing**: All unit tests for the main process services are passing (`bun test:main`).
 - **Basic UI**: A basic UI structure is in place using Next.js, React, and Tailwind CSS.
 
@@ -390,10 +390,10 @@
 
 - **Renderer Test Coverage**: The unit and component test coverage for the renderer process (`src/renderer`) is currently low and needs significant improvement.
 - **UI Feature Implementation**: Many UI features are still placeholders or in a basic state. Key features to implement include:
-    - Video player controls.
-    - Interactive subtitle display and word selection.
-    - Vocabulary list management view.
-    - Settings panel.
+  - Video player controls.
+  - Interactive subtitle display and word selection.
+  - Vocabulary list management view.
+  - Settings panel.
 - **E2E Testing**: End-to-end tests are minimal and need to be expanded to cover full user workflows.
 - **Error Handling**: Robust error handling needs to be implemented across the application (e.g., for file parsing errors, API failures).
 - **Packaging & Distribution**: The `electron-builder` configuration needs to be finalized and tested for creating installers for Windows, macOS, and Linux.
