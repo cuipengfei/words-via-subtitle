@@ -18,6 +18,7 @@
     "lint:fix": "eslint --config eslint.config.js --ext .ts,.tsx --fix .",
     "lint:verify": "node scripts/verify-eslint.js",
     "test": "vitest --config ./vitest.config.ts",
+    "test:main": "vitest --config ./vitest.main.config.ts",
     "test:renderer": "vitest --config ./tests/renderer/vitest.config.ts"
   },
   "keywords": [
