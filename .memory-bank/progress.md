@@ -371,3 +371,39 @@
 - 考虑使用 CSS Grid 替代复杂的 flex 嵌套
 - 或者使用第三方滚动库如 react-perfect-scrollbar
 - 需要深入分析 react-resizable-panels 与滚动的兼容性
+
+# Project Progress & Status
+
+## 1. What Works
+
+- **Core Application Shell**: The Electron application launches correctly, and the Next.js renderer process is successfully loaded.
+- **Development Workflow**: The `bun dev` script successfully starts the development environment with hot-reloading for both main and renderer processes.
+- **Build Process**: The `bun build` script correctly compiles TypeScript for the main process and builds the Next.js application for the renderer.
+- **Main Process Services**: The core services in the main process have been implemented and are covered by unit tests.
+    - `FileService`: Handles file-related operations.
+    - `SubtitleService`: Parses subtitle files.
+    - `StoreService`: Manages persistent application data.
+- **Main Process Testing**: All unit tests for the main process services are passing (`bun test:main`).
+- **Basic UI**: A basic UI structure is in place using Next.js, React, and Tailwind CSS.
+
+## 2. What's Left to Build / Improve
+
+- **Renderer Test Coverage**: The unit and component test coverage for the renderer process (`src/renderer`) is currently low and needs significant improvement.
+- **UI Feature Implementation**: Many UI features are still placeholders or in a basic state. Key features to implement include:
+    - Video player controls.
+    - Interactive subtitle display and word selection.
+    - Vocabulary list management view.
+    - Settings panel.
+- **E2E Testing**: End-to-end tests are minimal and need to be expanded to cover full user workflows.
+- **Error Handling**: Robust error handling needs to be implemented across the application (e.g., for file parsing errors, API failures).
+- **Packaging & Distribution**: The `electron-builder` configuration needs to be finalized and tested for creating installers for Windows, macOS, and Linux.
+
+## 3. Current Status
+
+- The project is in a stable state with a solid foundation. The main process logic is well-tested.
+- The immediate priority is to increase the test coverage of the renderer process to ensure the reliability of UI components and hooks before adding new features.
+
+## 4. Evolution of Decisions
+
+- **Initial Choice of `npm/yarn` vs. `bun`**: The project has fully migrated to `bun` for package management and script execution to leverage its speed and simplicity.
+- **Testing Framework**: `Vitest` was chosen over `Jest` for its modern features, speed, and seamless integration with Vite, which is beneficial for the Next.js environment.

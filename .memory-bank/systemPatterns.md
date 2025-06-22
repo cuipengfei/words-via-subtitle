@@ -1,447 +1,152 @@
-# 系统架构与设计模式
+# System Design Patterns
 
-## 总体架构
+## 1. Core Architecture: Electron Main/Renderer Process Model
 
-项目采用经典的 Electron 主进程/渲染进程分离架构，结合 Next.js 构建现代化桌面应用：
+This application follows the fundamental architectural pattern of an [Electron](https://www.electronjs.org/docs/latest/tutorial/process-model) application, which is composed of two distinct process types:
 
-```mermaid
-flowchart TB
-    subgraph Electron[Electron 应用架构]
-        subgraph MainProcess[主进程 - Node.js 环境]
-            Main[main.ts] --> Initialize[应用初始化]
-            Initialize --> Services[业务服务层]
-            Services --> SP[SubtitleParserService]
-            Services --> DS[DictionaryService]
-            Services --> LRS[LearningRecordService]
-            Services --> SS[SettingsService]
+-   **Main Process**: Acts as the application's backend and entry point. It has access to Node.js APIs and is responsible for managing native desktop functionalities like creating windows, handling file system operations, and managing the application lifecycle. In this project, the main process code resides in `src/main/`.
 
-            IPC[IPC处理器] --> Services
-            IPC --> FileSystem[文件系统操作]
-        end
+-   **Renderer Process**: Acts as the application's frontend. Each browser window (`BrowserWindow` instance) runs its own renderer process. It is responsible for rendering the user interface using web technologies. In this project, the renderer process is a [Next.js](https://nextjs.org/) application located in `src/renderer/`.
 
-        subgraph RendererProcess[渲染进程 - Next.js]
-            App[App页面] --> Layout[布局组件]
-            Layout --> TopBar[顶部工具栏]
-            Layout --> WordList[单词列表面板]
-            Layout --> WordDef[释义显示面板]
+This separation allows us to leverage web technologies for the UI while still having access to the underlying operating system's capabilities.
 
-            Components[React组件] --> ElectronAPI[electronAPI调用]
-            ElectronAPI --> |安全调用| IPC
-        end
+## 2. Communication: Inter-Process Communication (IPC)
 
-        subgraph PreloadScript[安全桥接层]
-            Preload[preload.ts] --> ContextBridge[contextBridge]
-            ContextBridge --> SafeAPI[类型安全API]
-        end
+Communication between the main process and renderer processes is achieved through Electron's Inter-Process Communication (IPC) modules. We use a structured and type-safe approach:
 
-        MainProcess <-->|IPC通信| PreloadScript
-        PreloadScript --> RendererProcess
-    end
-
-    subgraph ExternalServices[外部服务]
-        Files[字幕文件 SRT/ASS] --> MainProcess
-        FreeDict[Free Dictionary API] --> DS
-        BingAPI[必应翻译API] --> DS
-        ElectronStore[electron-store] --> SS
-    end
-```
-
-## 核心设计模式
-
-### 1. 服务层模式 (Service Layer Pattern)
-
-**设计理念**: 将业务逻辑封装在专门的服务类中，提供清晰的接口和职责分离
-
-```typescript
-// 服务基础接口
-interface Service {
-  initialize(): Promise<void>;
-  cleanup?(): void;
-}
-
-// 实现示例
-class SubtitleParserService implements Service {
-  async initialize() {
-    /* 初始化逻辑 */
-  }
-  async parseFile(filePath: string): Promise<ParseResult> {
-    /* 解析逻辑 */
-  }
-}
-
-// 具体服务实现
-class SubtitleParserService implements Service {
-  // 单一职责：字幕解析
-}
-
-class DictionaryService implements Service {
-  // 单一职责：在线词典查询和翻译
-}
-```
-
-**优势：**
-
-- 职责分离，便于测试和维护
-- 可独立扩展每个服务
-- 易于实现依赖注入
-
-### 2. 命令模式 (Command Pattern) - IPC 通信
-
-IPC 通信采用命令模式，每个操作对应一个命令：
-
-```typescript
-enum IPC_CHANNELS {
-  OPEN_SUBTITLE_FILE = 'open-subtitle-file',
-  PARSE_SUBTITLE_FILE = 'parse-subtitle-file',
-  LOOKUP_WORD = 'lookup-word',
-}
-```
-
-**优势：**
-
-- 类型安全的通信
-- 易于添加新命令
-- 统一的错误处理
-
-### 3. 策略模式 (Strategy Pattern) - 字幕解析
-
-支持多种字幕格式的解析策略：
-
-```typescript
-interface SubtitleParsingStrategy {
-  canParse(content: string): boolean;
-  parse(content: string): SubtitleEntry[];
-}
-
-class SrtParsingStrategy implements SubtitleParsingStrategy {
-  // SRT格式解析
-}
-
-class AssParsingStrategy implements SubtitleParsingStrategy {
-  // ASS格式解析
-}
-```
-
-### 4. 观察者模式 (Observer Pattern) - 状态管理
-
-前端使用 React 的状态管理，遵循观察者模式：
-
-```typescript
-// 状态变化自动触发UI更新
-const [subtitleEntries, setSubtitleEntries] = useState<SubtitleEntry[]>([]);
-const [selectedWord, setSelectedWord] = useState<string>('');
-```
-
-## 数据流架构
-
-### 单向数据流
+-   **IPC Channels**: Defined in `src/shared/ipc.ts`, creating a single source of truth for channel names.
+-   **Type-Safe Contracts**: We use `ipcMain.handle` in the main process and `ipcRenderer.invoke` in the renderer process for request-response style communication. The data structures for these communications are defined in `src/shared/types/` to ensure type safety between processes.
+-   **Preload Script**: A preload script (`src/main/preload.ts`) is used to securely expose specific IPC functionalities to the renderer process, rather than exposing the entire `ipcRenderer` object.
 
 ```mermaid
 flowchart TD
-    UserAction[用户操作] --> StateUpdate[状态更新]
-    StateUpdate --> UIRender[UI重新渲染]
+    subgraph Renderer Process (UI - Next.js)
+        A[React Component] --> B{ipcRenderer.invoke('channel', ...args)};
+    end
 
-    subgraph IPCFlow[IPC数据流]
-        Frontend[前端请求] --> IPC[IPC通道]
-        IPC --> Service[后端服务]
-        Service --> DataProcess[数据处理]
-        DataProcess --> Response[响应数据]
+    subgraph Main Process (Backend - Node.js)
+        C{ipcMain.handle('channel', ...)} --> D[Service Logic];
+    end
+
+    B -- IPC --> C;
+    D -- Returns value --> C;
+    C -- IPC Response --> B;
+    B -- Returns Promise --> A;
+```
+
+## 3. Main Process Design: Service-Oriented Architecture
+
+The main process logic is organized into a set of cohesive, single-responsibility services. This makes the code more modular, easier to test, and simpler to maintain.
+
+-   **`FileService`**: Handles all file system interactions (e.g., opening file dialogs).
+-   **`SubtitleService`**: Responsible for parsing and processing subtitle files.
+-   **`StoreService`**: Manages persistent data and user settings via `electron-store`.
+
+These services are instantiated in the main application entry point (`src/main/main.ts`) and their methods are exposed to the renderer process via the IPC handlers (`src/main/ipc-handlers.ts`).
+
+## 4. UI Design: Component-Based Architecture with React
+
+The renderer process, being a Next.js application, naturally follows a component-based architecture. Reusable UI components are located in `src/renderer/components/`. We utilize React Hooks (`src/renderer/hooks/`) for managing state and side effects within these components.
+
+## 5. Data Flow: Unidirectional Data Flow
+
+Data flow within the application follows a unidirectional pattern, ensuring that data changes propagate in a single direction, making the flow of data and events easier to understand and debug.
+
+-   **State Management**: The application state is managed using React's built-in state management and Context API for global state.
+-   **Data Fetching**: Data is fetched from the main process using IPC calls and then passed down to components as props.
+
+```mermaid
+flowchart TD
+    UserAction[User Action] -->|Triggers| StateUpdate[State Update]
+    StateUpdate -->|Causes| UIRender[UI Re-render]
+
+    subgraph IPCFlow[IPC Data Flow]
+        Frontend[Frontend Request] --> IPC[IPC Channel]
+        IPC --> Service[Backend Service]
+        Service --> DataProcess[Data Processing]
+        DataProcess --> Response[Response Data]
         Response --> Frontend
     end
 
     UserAction --> IPCFlow
 ```
 
-### 类型安全数据传输
+## 6. Error Handling: Centralized Error Handling
+
+The application implements a centralized error handling mechanism to gracefully handle and report errors.
+
+-   **Main Process**: Catches unhandled errors and promise rejections, logging them and sending error details to the renderer process via IPC.
+-   **Renderer Process**: Listens for error events from the main process and displays user-friendly error messages in the UI.
 
 ```typescript
-// 共享类型定义确保前后端数据一致性
-export interface SubtitleEntry {
-  index: number;
-  startTime: string;
-  endTime: string;
-  text: string;
-}
-
-export interface WordEntry {
-  word: string;
-  count: number;
-}
-
-export interface DictionaryEntry {
-  word: string;
-  phonetic?: string;
-  definitions: string[];
-  translation?: string;
-  examples?: string[];
-}
-```
-
-    MainProcess --> IPC --> Renderer
-    Renderer -->|Action| IPC
-    IPC -->|Event| MainProcess
-
-````
-
-### 3. 组件设计原则
-
-- 采用函数式组件和 Hooks
-- 关注点分离，每个组件只负责特定功能
-- 使用 TypeScript 接口确保类型安全
-
-## 关键接口
-
-### IPC 通信接口
-
-主进程和渲染进程通过以下 IPC 接口通信：
-
-- **字幕处理**:
-
-  - `parse-subtitle-file`: 解析字幕文件
-  - `get-subtitles`: 获取当前字幕
-  - `get-subtitle-at-time`: 获取指定时间的字幕
-  - `get-words-near-time`: 获取时间点附近的单词
-  - `get-word-mappings`: 获取单词时间映射
-
-- **词典查询**:
-
-  - `translate-word`: 翻译单词
-  - `get-word-definition`: 获取单词详细定义
-
-- **学习记录**:
-
-  - `save-learned-word`: 保存学习的单词
-  - `get-learned-words`: 获取已学习单词列表
-  - `update-word-status`: 更新单词状态
-
-- **文件操作**:
-
-  - `open-video-file`: 打开视频文件
-  - `open-subtitle-file`: 打开字幕文件
-  - `save-config`: 保存配置
-
-- **应用设置**:
-  - `get-settings`: 获取应用设置
-  - `update-settings`: 更新应用设置
-
-### 数据存储
-
-使用 electron-store 进行本地数据持久化：
-
-- **配置存储**: 用户设置和首选项
-- **词典存储**: 本地词典数据
-- **学习记录**: 学习进度和已知单词列表
-
-## 开发规范与代码质量管理
-
-### 代码质量工具
-
-- **ESLint**: 采用 ESLint v9 的扁平配置格式(eslint.config.js)，分别为主进程、渲染进程和共享代码设置不同的规则集：
-  - 主进程规则：允许 console 使用，设置 Node 环境全局变量
-  - 渲染进程规则：设置浏览器环境全局变量
-  - 共享代码规则：严格类型检查
-  - 类型定义文件：放宽未使用变量检查
-
-### 开发工作流
-
-- **代码提交前**: 运行 lint 检查确保代码质量
-- **API 开发**: 先定义接口，后实现功能，保持类型安全
-- **测试驱动**: 重要功能采用测试驱动开发
-
-## 安全模式
-
-### 1. 进程隔离
-- 主进程和渲染进程严格分离
-- 渲染进程无法直接访问 Node.js API
-- 通过预加载脚本安全暴露必要功能
-
-### 2. Context Bridge 安全模式
-```typescript
-// 预加载脚本中的安全API暴露
-contextBridge.exposeInMainWorld('electronAPI', {
-  openSubtitleFile: () => ipcRenderer.invoke(IPC_CHANNELS.OPEN_SUBTITLE_FILE),
-  parseSubtitleFile: (filePath: string) =>
-    ipcRenderer.invoke(IPC_CHANNELS.PARSE_SUBTITLE_FILE, filePath),
-  lookupWord: (word: string) =>
-    ipcRenderer.invoke(IPC_CHANNELS.LOOKUP_WORD, word)
+// Main process error handling
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Notify renderer process
 });
-````
 
-### 3. 类型安全验证
-
-```typescript
-// 运行时类型检查
-function isValidSubtitleEntry(entry: any): entry is SubtitleEntry {
-  return (
-    typeof entry.index === 'number' &&
-    typeof entry.startTime === 'string' &&
-    typeof entry.endTime === 'string' &&
-    typeof entry.text === 'string'
-  );
-}
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Notify renderer process
+});
 ```
 
-## 性能优化模式
+## 7. Security: Context Isolation and Preload Scripts
 
-### 1. 懒加载策略
+To enhance security, the application uses context isolation and preload scripts:
+
+-   **Context Isolation**: Ensures that the renderer process has a separate context from the main process, preventing direct access to Node.js APIs.
+-   **Preload Scripts**: A preload script is used to selectively expose safe APIs to the renderer process, using `contextBridge.exposeInMainWorld`.
 
 ```typescript
-// 词典数据按需加载
-class DictionaryService {
-  private dictionaryCache = new Map<string, DictionaryEntry>();
-
-  async lookupWord(word: string): Promise<DictionaryEntry | null> {
-    if (this.dictionaryCache.has(word)) {
-      return this.dictionaryCache.get(word)!;
-    }
-    // 动态加载词典数据
-  }
-}
+// preload.ts
+contextBridge.exposeInMainWorld('api', {
+  // Expose safe APIs
+});
 ```
 
-### 2. 数据缓存模式
+## 8. Performance Optimization: Efficient Data Handling
+
+Performance optimizations are implemented to ensure efficient data handling and UI responsiveness:
+
+-   **Lazy Loading**: Components and data are loaded on demand to reduce initial load time.
+-   **Memoization**: React's `useMemo` and `useCallback` hooks are used to memoize expensive calculations and functions.
+-   **Batching**: State updates are batched to minimize re-renders.
 
 ```typescript
-// 解析结果缓存
-class SubtitleParserService {
-  private parseCache = new Map<string, ParsedSubtitle>();
-
-  async parseSubtitle(filePath: string): Promise<ParsedSubtitle> {
-    const cacheKey = `${filePath}:${this.getFileHash(filePath)}`;
-    if (this.parseCache.has(cacheKey)) {
-      return this.parseCache.get(cacheKey)!;
-    }
-    // 解析并缓存结果
-  }
-}
+// Example of memoization
+const computedValue = useMemo(() => {
+  return expensiveComputation(data);
+}, [data]);
 ```
 
-### 3. 异步处理模式
+## 9. Testing: Comprehensive Testing Strategy
+
+The application is developed with a strong emphasis on testing, employing various testing strategies:
+
+-   **Unit Testing**: Individual functions and components are tested in isolation using Jest and React Testing Library.
+-   **Integration Testing**: Tests ensure that different parts of the application work together as expected.
+-   **End-to-End Testing**: The application is tested as a whole, simulating real user scenarios using tools like Spectron.
 
 ```typescript
-// 非阻塞的文件处理
-async function processLargeSubtitleFile(filePath: string): Promise<ParsedSubtitle> {
-  return new Promise((resolve, reject) => {
-    const stream = fs.createReadStream(filePath);
-    // 流式处理，避免内存占用过大
-  });
-}
+// Example unit test
+test('parses subtitle file correctly', async () => {
+  const result = await SubtitleService.parseFile('test.srt');
+  expect(result).toEqual(expectedParsedResult);
+});
 ```
 
-## 错误处理模式
+## 10. Accessibility: Inclusive Design Principles
 
-### 1. 统一错误处理
+The application is designed with accessibility in mind, following inclusive design principles:
 
-```typescript
-// IPC 错误包装
-export function wrapIpcHandler<T extends any[], R>(handler: (...args: T) => Promise<R>) {
-  return async (...args: T): Promise<R> => {
-    try {
-      return await handler(...args);
-    } catch (error) {
-      console.error('IPC Handler Error:', error);
-      throw new Error(`操作失败: ${error instanceof Error ? error.message : '未知错误'}`);
-    }
-  };
-}
-```
+-   **Semantic HTML**: Proper use of HTML elements to convey meaning and structure.
+-   **ARIA Roles**: Use of ARIA roles and attributes to enhance accessibility of dynamic content.
+-   **Keyboard Navigation**: Ensuring all interactive elements are accessible via keyboard.
 
-### 2. 用户友好的错误反馈
-
-```typescript
-// 前端错误状态管理
-const [error, setError] = useState<string | null>(null);
-const [loading, setLoading] = useState<boolean>(false);
-
-const handleOperation = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    await window.electronAPI.someOperation();
-  } catch (err) {
-    setError(err instanceof Error ? err.message : '操作失败');
-  } finally {
-    setLoading(false);
-  }
-};
-```
-
-## 可扩展性模式
-
-### 1. 插件架构预留
-
-```typescript
-// 为未来功能扩展预留接口
-interface FeaturePlugin {
-  name: string;
-  version: string;
-  initialize(): Promise<void>;
-  cleanup(): void;
-}
-
-class PluginManager {
-  private plugins = new Map<string, FeaturePlugin>();
-
-  registerPlugin(plugin: FeaturePlugin) {
-    this.plugins.set(plugin.name, plugin);
-  }
-}
-```
-
-### 2. 配置驱动模式
-
-```typescript
-// 应用配置管理
-interface AppConfig {
-  dictionarySource: 'local' | 'online' | 'hybrid';
-  supportedFormats: string[];
-  performance: {
-    cacheSize: number;
-    maxFileSize: number;
-  };
-}
-```
-
-### 3. 数据格式版本化
-
-```typescript
-// 数据格式版本管理
-interface DataFormat {
-  version: string;
-  migrate?(oldData: any): any;
-}
-
-interface SavedLearningProgress extends DataFormat {
-  version: '1.0.0';
-  words: WordProgress[];
-  lastUpdated: string;
-}
-```
-
-## 测试模式
-
-### 1. 依赖注入测试
-
-```typescript
-// 便于单元测试的构造函数注入
-class SubtitleParserService {
-  constructor(private fileSystem: FileSystemInterface = new NodeFileSystem()) {}
-}
-
-// 测试时注入 Mock
-const mockFileSystem = new MockFileSystem();
-const parser = new SubtitleParserService(mockFileSystem);
-```
-
-### 2. IPC 测试模式
-
-```typescript
-// IPC 通信的测试封装
-export function createTestIPCEnvironment() {
-  const mockIpc = {
-    invoke: jest.fn(),
-    handle: jest.fn(),
-  };
-  return mockIpc;
-}
+```html
+<!-- Example of ARIA role usage -->
+<div role="alert" aria-live="assertive">
+  Error: Unable to load subtitles.
+</div>
 ```

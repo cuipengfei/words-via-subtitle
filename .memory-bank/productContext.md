@@ -189,3 +189,35 @@
 - **技术现代化**: 采用最新技术栈，性能和体验俱佳
 - **开源生态**: 社区驱动的功能扩展和改进
 - **本地优先**: 保护用户隐私，支持离线使用
+
+# Product Context
+
+## 1. Problem Space
+
+Language learners often immerse themselves in native media like movies and TV shows to improve their skills. However, the process of understanding and learning new vocabulary from this content is often cumbersome. It typically involves:
+
+1.  Pausing the video.
+2.  Manually looking up the unfamiliar word in a separate dictionary or translator app.
+3.  Writing down the word and its meaning.
+4.  Resuming the video.
+
+This constant context-switching is disruptive, breaks the flow of viewing, and makes vocabulary acquisition inefficient.
+
+## 2. How It Should Work (User Experience)
+
+"Words Via Subtitle" aims to create a seamless and integrated learning experience. The ideal user journey is as follows:
+
+1.  **Open**: The user opens the application and is greeted with a clean interface to select a local video file.
+2.  **Load**: The user selects a video file and a corresponding subtitle file (`.srt`, `.ass`, etc.).
+3.  **Watch**: The video plays with the subtitles displayed overlaying the video or in a dedicated panel below.
+4.  **Interact**: When the user encounters an unknown word in the subtitles, they simply click on it.
+5.  **Learn**: A pop-up or a side panel instantly displays the definition, translation, and pronunciation of the clicked word, without interrupting video playback (playback can be configured to pause automatically).
+6.  **Save**: The user can save the word to a personal vocabulary list with a single click.
+7.  **Review**: At any time, the user can access their vocabulary lists, which are organized by the video they came from, and review the words they have saved.
+
+## 3. User Experience Goals
+
+- **Frictionless**: Minimize the effort required to look up and save a new word.
+- **Contextual**: Keep the learning process within the context of the video content.
+- **Non-disruptive**: Allow for an uninterrupted viewing experience.
+- **Modern & Intuitive**: Provide a visually appealing and easy-to-navigate user interface that feels at home on a modern desktop operating system.
