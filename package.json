@@ -43,7 +43,7 @@
     "@typescript-eslint/eslint-plugin": "^8.34.1",
     "@typescript-eslint/parser": "^8.34.1",
     "autoprefixer": "^10.4.21",
-    "chokidar": "^3.6.0",
+    "chokidar": "^4.0.3",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
     "electron": "^36.5.0",
@@ -80,5 +80,5 @@
     "react-resizable-panels": "^3.0.3",
     "subtitle": "^4.2.1"
   },
-  "packageManager": "bun@1.2.16"
+  "packageManager": "bun@1.2.17"
 }
